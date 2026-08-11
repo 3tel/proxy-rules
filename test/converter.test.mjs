@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createSubconverterUrl, isSubscriptionUrl, subscriptionLines } from "../docs/converter.js";
+import { createSubconverterUrl, isDirectNodeLink, isSubscriptionUrl, subscriptionLines } from "../docs/converter.js";
 
 test("subconverter URL maps Surge 4 and merges subscription inputs", () => {
   const result = createSubconverterUrl(
@@ -28,6 +28,8 @@ test("Shadowrocket subscriptions use mixed output", () => {
 test("subscription URLs are distinguished from node links", () => {
   assert.equal(isSubscriptionUrl("https://provider.example/sub?token=secret"), true);
   assert.equal(isSubscriptionUrl("vless://uuid@example.com:443"), false);
+  assert.equal(isDirectNodeLink("vless://uuid@example.com:443"), true);
+  assert.equal(isDirectNodeLink("https://provider.example/sub?token=secret"), false);
 });
 
 test("base64 mixed subscription is expanded into node links", () => {

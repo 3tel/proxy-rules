@@ -18,6 +18,7 @@ Clash、Surge、Quantumult X 和 sing-box 输出器。
 - 生成后可直接预览、复制或显示本地二维码，不会自动下载
 - 支持逐节点标准分享二维码；完整配置使用 `.conf` 文件导入
 - 提供与 subconverter 对应的客户端生成类型选择
+- Clash 目标对 VLESS、VMess、Trojan 和 SS 直链优先在浏览器本地生成，避免旧版 subconverter 无法识别 VLESS 直链
 - 节点凭据只在浏览器本地处理，不上传、不存储
 - GitHub Actions 每日自动测试、构建规则并部署 GitHub Pages
 
@@ -48,6 +49,9 @@ Shadowrocket 配置直接在浏览器本地生成。其他格式默认使用项�
 输入框支持一行一个 HTTP/HTTPS 订阅链接，也可同时填写多个订阅地址进行合并。选择
 Shadowrocket 时，直接节点仍在浏览器本地解析；如果输入中包含订阅链接，则使用用户填写的
 subconverter 服务以 `mixed` 格式解析订阅，再与直接节点合并成带分流规则的配置。
+
+选择 Clash 并输入 VLESS、VMess、Trojan 或 SS 直链时，网页会直接生成 Clash YAML，不调用
+转换后台；VLESS Reality 等新协议字段需要使用支持相应协议的 Clash Meta 客户端。
 
 本地构建需要 Node.js 20 或更高版本：
 

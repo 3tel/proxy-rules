@@ -1,5 +1,5 @@
 import QRCode from "qrcode";
-import { CONVERTER_TARGETS, createSubconverterUrl, isSubscriptionUrl, subscriptionLines } from "./converter.js";
+import { CONVERTER_TARGETS, createSubconverterUrl, isDirectNodeLink, isSubscriptionUrl, subscriptionLines } from "./converter.js";
 
 const form = document.querySelector("#generator");
 const nodeInput = document.querySelector("#nodes");
@@ -41,6 +41,11 @@ form.addEventListener("submit", async (event) => {
       generatedNodes = nodes;
       generatedConfig = buildConfig(nodes);
       generatedExtension = "conf";
+    } else if (outputType.value === "clash" && lines.every(isDirectNodeLink)) {
+      const nodes = uniqueNames(lines.map(parseNode));
+      generatedNodes = nodes;
+      generatedConfig = buildClashConfig(nodes);
+      generatedExtension = "yaml";
     } else {
       generatedNodes = [];
       generatedConfig = await convertWithSubconverter(lines, outputType.value);
@@ -48,7 +53,7 @@ form.addEventListener("submit", async (event) => {
     }
     renderOutput();
     await renderQr();
-    summary.textContent = outputType.value === "shadowrocket" ? `已生成 ${generatedNodes.length} 个节点` : "订阅转换完成";
+    summary.textContent = generatedNodes.length ? `已生成 ${generatedNodes.length} 个节点` : "订阅转换完成";
     status.textContent = generatedNodes.length
       ? "配置可预览、复制或下载；节点可使用标准分享二维码导入。"
       : "转换结果可预览、复制或下载。";
@@ -86,7 +91,8 @@ function updateSummary() {
 }
 
 function toggleConversionMode() {
-  const remoteFormat = outputType.value !== "shadowrocket";
+  const localClash = outputType.value === "clash" && inputLines().length > 0 && inputLines().every(isDirectNodeLink);
+  const remoteFormat = outputType.value !== "shadowrocket" && !localClash;
   const needsConverter = remoteFormat || inputLines().some(isSubscriptionUrl);
   document.querySelector("#converter-options").hidden = !needsConverter;
   document.querySelectorAll(".local-only").forEach((element) => { element.hidden = remoteFormat; });
@@ -95,7 +101,7 @@ function toggleConversionMode() {
   generatedNodes = [];
   status.textContent = needsConverter
     ? "订阅地址或所选格式将使用你指定的 subconverter 服务转换。"
-    : "Shadowrocket 配置和节点信息只在当前浏览器处理。";
+    : "节点和 Clash 配置只在当前浏览器处理。";
 }
 
 function inputLines() {
@@ -144,7 +150,31 @@ function parseStandard(value, protocol) {
   }
   if (q.get("flow")) options.push(`flow=${clean(q.get("flow"))}`);
   options.push("udp=true");
-  return { name: cleanName(name), line: `${cleanName(name)}=${protocol},${host(url.hostname)},${url.port},${options.join(",")}` };
+  const clash = {
+    type: protocol,
+    server: url.hostname,
+    port: Number(url.port),
+    ...(protocol === "vless" ? { uuid: decodeURIComponent(url.username) } : { password: decodeURIComponent(url.username) }),
+    udp: true,
+  };
+  if (security !== "none") clash.tls = true;
+  if (transport !== "tcp" && transport !== "none") clash.network = transport;
+  if (sni) clash.servername = sni;
+  if (q.get("allowInsecure") === "1") clash["skip-cert-verify"] = true;
+  if (protocol === "vless" && q.get("flow")) clash.flow = q.get("flow");
+  if (security === "reality") {
+    clash["client-fingerprint"] = q.get("fp") || "chrome";
+    clash["reality-opts"] = {};
+    if (q.get("pbk")) clash["reality-opts"]["public-key"] = q.get("pbk");
+    if (q.get("sid")) clash["reality-opts"]["short-id"] = q.get("sid");
+  }
+  if (transport === "ws") {
+    clash["ws-opts"] = { path: q.get("path") || "/" };
+    if (q.get("host")) clash["ws-opts"].headers = { Host: q.get("host") };
+  } else if (transport === "grpc" && q.get("serviceName")) {
+    clash["grpc-opts"] = { "grpc-service-name": q.get("serviceName") };
+  }
+  return { name: cleanName(name), line: `${cleanName(name)}=${protocol},${host(url.hostname)},${url.port},${options.join(",")}`, clash };
 }
 
 function parseVmess(value) {
@@ -161,7 +191,23 @@ function parseVmess(value) {
     if (data.path) options.push(`obfs-uri=${clean(data.path)}`);
   }
   options.push("udp=true");
-  return { name, line: `${name}=vmess,${host(String(data.add))},${clean(String(data.port))},${options.join(",")}` };
+  const clash = {
+    type: "vmess",
+    server: String(data.add),
+    port: Number(data.port),
+    uuid: String(data.id),
+    alterId: Number(data.aid || 0),
+    cipher: data.scy || "auto",
+    udp: true,
+  };
+  if (data.tls === "tls") clash.tls = true;
+  if (data.sni || data.host) clash.servername = data.sni || data.host;
+  if (data.net && data.net !== "tcp") clash.network = data.net;
+  if (data.net === "ws") {
+    clash["ws-opts"] = { path: data.path || "/" };
+    if (data.host) clash["ws-opts"].headers = { Host: data.host };
+  }
+  return { name, line: `${name}=vmess,${host(String(data.add))},${clean(String(data.port))},${options.join(",")}`, clash };
 }
 
 function parseShadowsocks(value) {
@@ -185,7 +231,9 @@ function parseShadowsocks(value) {
   const match = endpoint.match(/^\[?([^\]]+)\]?:(\d+)$/);
   if (!match || !method || !password) throw new Error("Shadowsocks 链接缺少加密方式、密码或地址。");
   const safe = cleanName(name || `SS ${match[1]}`);
-  return { name: safe, line: `${safe}=ss,${host(match[1])},${match[2]},password=${clean(password)},method=${clean(method)},udp=true` };
+  return { name: safe, line: `${safe}=ss,${host(match[1])},${match[2]},password=${clean(password)},method=${clean(method)},udp=true`, clash: {
+    type: "ss", server: match[1], port: Number(match[2]), cipher: method, password, udp: true,
+  } };
 }
 
 async function convertWithSubconverter(inputs, type) {
@@ -204,10 +252,76 @@ async function convertWithSubconverter(inputs, type) {
   } catch {
     throw new Error("无法连接转换服务。请检查服务地址、HTTPS 和 CORS 设置。");
   }
-  if (!response.ok) throw new Error(`转换服务返回 HTTP ${response.status}。`);
   const result = await response.text();
+  if (!response.ok) {
+    const detail = result.replace(/\s+/g, " ").trim().slice(0, 180);
+    throw new Error(`转换服务返回 HTTP ${response.status}${detail ? `：${detail}` : "。"}`);
+  }
   if (!result.trim()) throw new Error("转换服务返回了空内容。");
   return result;
+}
+
+function buildClashConfig(nodes) {
+  const base = `${location.origin}${location.pathname.replace(/\/[^/]*$/, "/")}rules`;
+  const providers = [
+    ["reject", "REJECT", document.querySelector("#rule-reject").checked],
+    ["proxy", "PROXY", document.querySelector("#rule-proxy").checked],
+    ["direct", "DIRECT", document.querySelector("#rule-direct").checked],
+  ].filter(([, , enabled]) => enabled);
+  const lines = [
+    "mixed-port: 7890",
+    "allow-lan: false",
+    "mode: rule",
+    "ipv6: true",
+    "dns:",
+    "  enable: true",
+    "  nameserver:",
+    ...document.querySelector("#dns").value.split(",").map((server) => `    - ${yamlScalar(server.trim())}`).filter((line) => !line.endsWith('""')),
+    "proxies:",
+  ];
+  nodes.forEach((node) => {
+    lines.push("  -");
+    lines.push(...yamlLines({ name: node.name, ...node.clash }, 4));
+  });
+  lines.push("proxy-groups:", "  - name: PROXY", "    type: select", "    proxies:");
+  nodes.forEach((node) => lines.push(`      - ${yamlScalar(node.name)}`));
+  lines.push("rule-providers:");
+  providers.forEach(([id]) => {
+    lines.push(`  ${id}:`, "    type: http", "    behavior: classical", "    format: text", `    url: ${yamlScalar(`${base}/${id}.list`)}`, `    path: ./rules/${id}.list`, "    interval: 86400");
+  });
+  lines.push("rules:");
+  const custom = [
+    ...customRules("reject", "REJECT"),
+    ...customRules("proxy", "PROXY"),
+    ...customRules("direct", "DIRECT"),
+  ];
+  lines.push(...custom.map((rule) => `  - ${yamlScalar(rule)}`));
+  providers.forEach(([id, action]) => lines.push(`  - RULE-SET,${id},${action}`));
+  if (document.querySelector("#rule-geoip").checked) lines.push("  - GEOIP,CN,DIRECT");
+  lines.push(`  - MATCH,${document.querySelector("#final-policy").value}`);
+  return `${lines.join("\n")}\n`;
+}
+
+function yamlLines(value, indent) {
+  const lines = [];
+  Object.entries(value).forEach(([key, item]) => {
+    const prefix = " ".repeat(indent);
+    if (item && typeof item === "object" && !Array.isArray(item)) {
+      lines.push(`${prefix}${key}:`);
+      lines.push(...yamlLines(item, indent + 2));
+    } else if (Array.isArray(item)) {
+      lines.push(`${prefix}${key}:`);
+      item.forEach((entry) => lines.push(`${" ".repeat(indent + 2)}- ${yamlScalar(entry)}`));
+    } else {
+      lines.push(`${prefix}${key}: ${yamlScalar(item)}`);
+    }
+  });
+  return lines;
+}
+
+function yamlScalar(value) {
+  if (typeof value === "boolean" || typeof value === "number") return String(value);
+  return JSON.stringify(String(value ?? ""));
 }
 
 function buildConfig(nodes) {

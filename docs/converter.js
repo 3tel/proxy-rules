@@ -21,6 +21,10 @@ export function isSubscriptionUrl(value) {
   }
 }
 
+export function isDirectNodeLink(value) {
+  return /^(?:vless|vmess|trojan|ss):\/\//i.test(value.trim());
+}
+
 export function subscriptionLines(value, decode) {
   const trimmed = value.trim();
   if (!trimmed) return [];
