@@ -190,7 +190,7 @@ function parseShadowsocks(value) {
 
 async function convertWithSubconverter(inputs, type) {
   const endpointValue = document.querySelector("#converter-url").value.trim();
-  if (!endpointValue) throw new Error("请填写你自己的 subconverter 服务地址。");
+  if (!endpointValue) throw new Error("请填写 subconverter 服务地址。");
   if (!document.querySelector("#converter-consent").checked) throw new Error("请确认你了解订阅信息将发送到转换服务。");
   let endpoint;
   try {

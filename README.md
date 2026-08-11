@@ -41,9 +41,9 @@ https://3tel.github.io/custom-proxy-rules/
 Loon、SS、SSD、SSR、Surfboard、Surge 2/3/4、Trojan、V2Ray、Mixed 和 Auto。这些名称及
 目标参数与 [subconverter](https://github.com/tindy2013/subconverter) 保持一致。
 
-Shadowrocket 配置直接在浏览器本地生成。其他格式需要填写用户自行部署的 subconverter
-服务地址；网页只有在用户明确勾选同意后才会发送订阅信息。项目不预设公共转换服务，避免
-把订阅地址、UUID 或密码交给未知第三方。
+Shadowrocket 配置直接在浏览器本地生成。其他格式默认使用项目维护的
+`https://convert.3tel.net` subconverter 服务，也可以替换成其他服务地址。网页只有在用户
+明确勾选同意后才会发送订阅信息；转换服务会接触订阅地址、UUID 和密码等节点信息。
 
 输入框支持一行一个 HTTP/HTTPS 订阅链接，也可同时填写多个订阅地址进行合并。选择
 Shadowrocket 时，直接节点仍在浏览器本地解析；如果输入中包含订阅链接，则使用用户填写的
