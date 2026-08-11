@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="在浏览器本地把代理节点链接和分流规则生成 Shadowrocket 配置。">
+    <meta name="description" content="把订阅、代理节点和分流规则生成 Shadowrocket 或 Clash 配置。">
     <meta name="color-scheme" content="dark">
     <title>Custom Proxy Rules · 配置生成器</title>
     <link rel="stylesheet" href="styles.css">
@@ -12,11 +12,11 @@
   <body>
     <main>
       <header class="hero">
-        <a class="brand" href="https://github.com/3tel/custom-proxy-rules">CUSTOM / PROXY / RULES</a>
+        <a class="brand" href="https://github.com/3tel/proxy-rules">CUSTOM / PROXY / RULES</a>
         <div class="hero-copy">
           <p class="eyebrow">PRIVATE. LOCAL. READY.</p>
           <h1>把节点和规则，<br><span>变成一份配置。</span></h1>
-          <p class="lede">粘贴订阅地址，或添加 VLESS、VMess、Trojan、Shadowsocks 分享链接，生成所需客户端格式。</p>
+          <p class="lede">粘贴订阅地址，或添加 VLESS、VMess、Trojan、Shadowsocks 分享链接，生成带节点和规则的客户端配置。</p>
         </div>
         <div class="privacy"><span></span>直接节点本地处理；订阅转换使用你指定的服务</div>
       </header>
@@ -32,7 +32,7 @@
         <section class="panel">
           <div class="step"><span>02</span><div><h2>配置选项</h2><p>选择默认策略和节点组方式。</p></div></div>
           <div class="fields">
-            <label>生成类型<select id="output-type"><option value="shadowrocket">Shadowrocket 配置（本地）</option><option value="clash">Clash（直链本地生成）</option><option value="clashr">ClashR</option><option value="quan">Quantumult</option><option value="quanx">Quantumult X</option><option value="loon">Loon</option><option value="ss">SS / Shadowrocket 节点</option><option value="sssub">SS Android</option><option value="ssd">SSD</option><option value="ssr">SSR</option><option value="surfboard">Surfboard</option><option value="surge2">Surge 2</option><option value="surge3">Surge 3</option><option value="surge4">Surge 4</option><option value="trojan">Trojan</option><option value="v2ray">V2Ray</option><option value="mixed">Mixed</option><option value="auto">Auto</option></select></label>
+            <label>生成类型<select id="output-type"><option value="shadowrocket">Shadowrocket 配置（含节点和规则）</option><option value="clash">Clash 配置（含节点和规则）</option><option value="clashr">ClashR</option><option value="quan">Quantumult</option><option value="quanx">Quantumult X</option><option value="loon">Loon</option><option value="ss">SS / Shadowrocket 节点</option><option value="sssub">SS Android</option><option value="ssd">SSD</option><option value="ssr">SSR</option><option value="surfboard">Surfboard</option><option value="surge2">Surge 2</option><option value="surge3">Surge 3</option><option value="surge4">Surge 4</option><option value="trojan">Trojan</option><option value="v2ray">V2Ray</option><option value="mixed">Mixed</option><option value="auto">Auto</option></select></label>
             <label>配置名称<input id="filename" value="custom-proxy" maxlength="48"></label>
             <label>节点策略<select id="group-mode"><option value="select">手动选择</option><option value="url-test">自动测速</option><option value="fallback">故障切换</option></select></label>
             <label>最终策略<select id="final-policy"><option value="PROXY">未匹配走代理</option><option value="DIRECT">未匹配直连</option></select></label>
@@ -76,7 +76,7 @@
             <div><p class="eyebrow">LOCAL OUTPUT</p><h2>配置已在本地生成</h2></div>
             <div class="output-actions"><button type="button" id="copy-config">复制配置</button><button type="button" id="download-config">下载文件</button></div>
           </div>
-          <p id="config-import-help" class="import-help">完整配置不能通过普通二维码导入。请下载 `.conf` 文件，然后从 iOS“文件”中用 Shadowrocket 打开；也可在 Shadowrocket 的“配置”页面导入该文件。</p>
+          <p id="config-import-help" class="import-help">Shadowrocket 完整配置不能通过普通二维码导入。请下载 `.conf` 文件，然后从 iOS“文件”中用 Shadowrocket 打开；也可在 Shadowrocket 的“配置”页面导入该文件。右侧二维码只用于单独添加节点。</p>
           <div class="output-grid">
             <div class="preview-box"><div class="box-title"><span>配置预览</span><span id="config-size"></span></div><pre id="config-preview" tabindex="0"></pre></div>
             <div class="qr-box" id="qr-box">
@@ -88,7 +88,7 @@
         </section>
       </form>
 
-      <footer><span>custom-proxy-rules</span><a href="https://github.com/3tel/custom-proxy-rules">Source on GitHub ↗</a></footer>
+      <footer><span>custom-proxy-rules</span><a href="https://github.com/3tel/proxy-rules">Source on GitHub ↗</a></footer>
     </main>
   </body>
 </html>

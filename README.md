@@ -1,10 +1,7 @@
 # custom-proxy-rules
 
-将公开规则源与你自己的域名、IP/CIDR 和覆盖规则合并，并在浏览器本地把代理节点链接生成
-可下载的 Shadowrocket 配置。
-
-首个版本输出 Shadowrocket 模块，但项目的数据模型和编译流程不绑定具体客户端，后续可增加
-Clash、Surge、Quantumult X 和 sing-box 输出器。
+将公开规则源与你自己的域名、IP/CIDR 和覆盖规则合并，并在浏览器里生成可下载的
+Shadowrocket 或 Clash 配置。
 
 ## 特点
 
@@ -26,11 +23,11 @@ Clash、Surge、Quantumult X 和 sing-box 输出器。
 
 普通用户直接打开在线生成器：
 
-https://3tel.github.io/custom-proxy-rules/
+https://3tel.github.io/proxy-rules/
 
-粘贴节点链接、选择分流规则和策略，然后点击“生成配置”。网页会生成包含 `[Proxy]`、
-`[Proxy Group]` 和远程分流规则引用的临时配置，并提供预览、复制、二维码和可选下载。
-节点 UUID、密码和服务器信息不会离开当前浏览器。
+粘贴节点或订阅链接、选择分流规则和策略，然后点击“生成配置”。网页会生成包含节点组和
+分流规则的临时配置，并提供预览、复制、二维码和可选下载。直接节点的 UUID、密码和服务器
+信息不会离开当前浏览器；订阅链接需要通过你指定的 subconverter 服务解析。
 
 单个节点二维码使用原始标准分享链接，可以直接扫码添加。Shadowrocket 的扫码入口不接受
 普通二维码中的完整配置正文，因此网页不会再生成无效的“整份配置二维码”。完整配置请下载
@@ -50,8 +47,9 @@ Shadowrocket 配置直接在浏览器本地生成。其他格式默认使用项�
 Shadowrocket 时，直接节点仍在浏览器本地解析；如果输入中包含订阅链接，则使用用户填写的
 subconverter 服务以 `mixed` 格式解析订阅，再与直接节点合并成带分流规则的配置。
 
-选择 Clash 并输入 VLESS、VMess、Trojan 或 SS 直链时，网页会直接生成 Clash YAML，不调用
-转换后台；VLESS Reality 等新协议字段需要使用支持相应协议的 Clash Meta 客户端。
+选择 Clash 时，VLESS、VMess、Trojan 或 SS 直链会直接写入 `proxies`；订阅链接会先通过
+subconverter 取得节点，再在浏览器里合并本项目的 `rule-providers`、自定义规则和最终策略。
+VLESS Reality 等新协议字段需要使用支持相应协议的 Clash Meta 客户端。
 
 本地构建需要 Node.js 20 或更高版本：
 
@@ -70,7 +68,7 @@ npm run build:local
 一般用户只需订阅合并模块：
 
 ```text
-https://raw.githubusercontent.com/3tel/custom-proxy-rules/main/dist/shadowrocket/all.module
+https://raw.githubusercontent.com/3tel/proxy-rules/main/dist/shadowrocket/all.module
 ```
 
 生成文件位于 `dist/shadowrocket/`：
