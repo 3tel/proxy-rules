@@ -34,7 +34,7 @@
           <div class="fields">
             <label>生成类型<select id="output-type"><option value="shadowrocket">Shadowrocket：配置 + 节点二维码</option><option value="clash">Clash/Mihomo：节点 + 规则 YAML</option></select></label>
             <label>配置名称<input id="filename" value="custom-proxy" maxlength="48"></label>
-            <label>节点策略<select id="group-mode"><option value="select">手动选择</option><option value="url-test">自动测速</option><option value="fallback">故障切换</option></select></label>
+            <label>Clash 节点策略<select id="group-mode"><option value="select">手动选择</option><option value="url-test">自动测速</option><option value="fallback">故障切换</option></select></label>
             <label>最终策略<select id="final-policy"><option value="PROXY">未匹配走代理</option><option value="DIRECT">未匹配直连</option></select></label>
             <label>DNS<input id="dns" value="223.5.5.5, 119.29.29.29"></label>
           </div>
@@ -76,7 +76,7 @@
             <div><p class="eyebrow">LOCAL OUTPUT</p><h2>配置已生成</h2></div>
             <div class="output-actions"><button type="button" id="copy-config">复制配置</button><button type="button" id="download-config">下载文件</button></div>
           </div>
-          <p id="config-import-help" class="import-help">Shadowrocket 完整配置请下载 `.conf` 文件导入；右侧二维码只用于在 Shadowrocket 首页单独添加节点。</p>
+          <p id="config-import-help" class="import-help">Shadowrocket 完整配置包含节点选择、自动选择、故障转移、负载均衡、全球直连、全球拦截和漏网之鱼策略组。右侧二维码只用于在 Shadowrocket 首页单独添加节点。</p>
           <div class="output-grid">
             <div class="preview-box"><div class="box-title"><span>完整配置预览</span><span id="config-size"></span></div><pre id="config-preview" tabindex="0"></pre></div>
             <div class="qr-box" id="qr-box">

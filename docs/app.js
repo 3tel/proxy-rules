@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 import { buildClashConfig, enrichClashConfig, formatClashRuleList } from "./clash-config.js";
 import { createSubconverterUrl, isDirectNodeLink, isSubscriptionUrl, subscriptionLines } from "./converter.js";
+import { buildShadowrocketConfig, mapShadowrocketRules, shadowrocketPolicyForAction } from "./shadowrocket-config.js";
 
 const form = document.querySelector("#generator");
 const nodeInput = document.querySelector("#nodes");
@@ -33,6 +34,7 @@ form.addEventListener("submit", async (event) => {
     const lines = nodeInput.value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
     if (!lines.length) throw new Error("请至少添加一个订阅地址或节点分享链接。");
     if (outputType.value === "shadowrocket") {
+      await ensureSelectedRulesLoaded();
       const subscriptions = lines.filter(isSubscriptionUrl);
       const nodeLinks = lines.filter((line) => !isSubscriptionUrl(line));
       let resolvedLinks = nodeLinks;
@@ -282,30 +284,17 @@ async function convertWithSubconverter(inputs, type) {
 }
 
 function buildConfig(nodes) {
-  const names = nodes.map((node) => node.name).join(", ");
-  const mode = document.querySelector("#group-mode").value;
-  const groupExtra = mode === "url-test" ? ", url=http://www.gstatic.com/generate_204, interval=600, tolerance=50" : mode === "fallback" ? ", url=http://www.gstatic.com/generate_204, interval=600" : "";
-  const base = publicRulesBase();
-  const custom = [
-    ...customRules("reject", "REJECT"),
-    ...customRules("proxy", "PROXY"),
-    ...customRules("direct", "DIRECT"),
-  ];
-  const selectedRules = [
-    document.querySelector("#rule-reject").checked ? `RULE-SET,${base}/reject.list,REJECT` : null,
-    document.querySelector("#rule-proxy").checked ? `RULE-SET,${base}/proxy.list,PROXY` : null,
-    document.querySelector("#rule-direct").checked ? `RULE-SET,${base}/direct.list,DIRECT` : null,
-    document.querySelector("#rule-geoip").checked ? "GEOIP,CN,DIRECT" : null,
-  ].filter(Boolean);
-  return [
-    "# Generated locally by custom-proxy-rules", `# ${new Date().toISOString()}`, "",
-    "[General]", "bypass-system = true", "ipv6 = true", `dns-server = ${clean(document.querySelector("#dns").value)}`,
-    "skip-proxy = 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.168.0.0/16, localhost, *.local", "",
-    "[Proxy]", ...nodes.map((node) => node.line), "",
-    "[Proxy Group]", `PROXY = ${mode}, ${names}${groupExtra}`, "",
-    "[Rule]", ...custom,
-    ...selectedRules, `FINAL,${document.querySelector("#final-policy").value}`, "",
-  ].join("\n");
+  return buildShadowrocketConfig(nodes, {
+    dns: clean(document.querySelector("#dns").value) || "system",
+    finalPolicy: document.querySelector("#final-policy").value,
+    ruleSets: shadowrocketRuleSets(),
+    customRules: [
+      ...customRules("reject", shadowrocketPolicyForAction("REJECT")),
+      ...customRules("proxy", shadowrocketPolicyForAction("PROXY")),
+      ...customRules("direct", shadowrocketPolicyForAction("DIRECT")),
+    ],
+    geoip: document.querySelector("#rule-geoip").checked,
+  });
 }
 
 function renderOutput() {
@@ -374,6 +363,14 @@ function clashRuleSets() {
     id,
     action,
     rules: formatClashRuleList(remoteRuleCache.get(id) || "", action),
+  }));
+}
+
+function shadowrocketRuleSets() {
+  return enabledRuleProviders().map(({ id, action }) => ({
+    id,
+    action,
+    rules: mapShadowrocketRules(remoteRuleCache.get(id) || "", action),
   }));
 }
 

@@ -12,7 +12,7 @@ Shadowrocket 和 Clash/Mihomo 类客户端的配置。
 - 私有目录默认被 Git 忽略，降低内网信息误提交风险
 - 静态网页支持 VLESS、VMess、Trojan 和 Shadowsocks 分享链接
 - 可按需启用广告拦截、代理域名、国内直连和 GEOIP 分流
-- Shadowrocket 生成 `.conf` 配置，并提供逐节点标准分享二维码
+- Shadowrocket 生成 `.conf` 配置，内置节点选择、自动选择、故障转移、负载均衡、全球直连、全球拦截和漏网之鱼策略组，并提供逐节点标准分享二维码
 - Clash/Mihomo 生成 `.yaml`，节点和分流规则写在同一个文件里
 - 支持订阅链接；默认通过 `https://convert.3tel.net` 取得订阅节点
 - Clash/Mihomo 对 VLESS、VMess、Trojan 和 SS 直链优先在浏览器本地生成，避免旧版 subconverter 无法识别 VLESS 直链
@@ -38,7 +38,7 @@ https://3tel.github.io/proxy-rules/
 
 本项目只聚焦两类客户端：
 
-- Shadowrocket：生成包含 `[Proxy]`、`[Proxy Group]` 和 `[Rule]` 的 `.conf`，并为每个节点生成标准分享二维码。
+- Shadowrocket：生成包含 `[General]`、`[Proxy]`、多策略 `[Proxy Group]` 和 `[Rule]` 的 `.conf`，并为每个节点生成标准分享二维码。
 - Clash/Mihomo：生成包含节点和规则的一体化 `.yaml`，规则直接写入 `rules`，不再依赖 `rule-providers` 运行时下载。
 
 订阅解析默认使用项目维护的 `https://convert.3tel.net` subconverter 服务，也可以替换成其他
@@ -48,6 +48,8 @@ https://3tel.github.io/proxy-rules/
 输入框支持一行一个 HTTP/HTTPS 订阅链接，也可同时填写多个订阅地址进行合并。选择
 Shadowrocket 时，直接节点仍在浏览器本地解析；如果输入中包含订阅链接，则使用用户填写的
 subconverter 服务以 `mixed` 格式解析订阅，再与直接节点合并成带分流规则的配置。
+Shadowrocket 的 PROXY 规则会指向 `🚀 节点选择`，DIRECT 规则会指向 `🎯 全球直连`，REJECT
+规则会指向 `🛑 全球拦截`，最终未匹配流量默认进入 `🐟 漏网之鱼`。
 
 选择 Clash/Mihomo 时，VLESS、VMess、Trojan 或 SS 直链会直接写入 `proxies`；订阅链接会先
 通过 subconverter 取得节点，再在浏览器里合并本项目规则、自定义规则和最终策略。
