@@ -1,16 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { parse as parseYaml } from "yaml";
-import { buildClashConfig, enrichClashConfig } from "../docs/clash-config.js";
+import { buildClashConfig, enrichClashConfig, formatClashRuleList } from "../docs/clash-config.js";
 
 const options = {
   dnsServers: ["223.5.5.5", "119.29.29.29"],
   groupMode: "select",
   finalPolicy: "PROXY",
-  rulesBase: "https://3tel.github.io/proxy-rules/rules",
-  providers: [
-    { id: "reject", action: "REJECT" },
-    { id: "proxy", action: "PROXY" },
+  ruleSets: [
+    { id: "reject", action: "REJECT", rules: ["DOMAIN-SUFFIX,ads.example,REJECT"] },
+    { id: "proxy", action: "PROXY", rules: ["DOMAIN-SUFFIX,openai.com,PROXY"] },
   ],
   customRules: ["DOMAIN-SUFFIX,internal.example,DIRECT"],
   geoip: true,
@@ -39,11 +38,11 @@ test("direct nodes generate Clash YAML with proxies, groups and rules", () => {
   assert.equal(config.proxies[0].name, "HK VLESS");
   assert.equal(config.proxies[0].type, "vless");
   assert.deepEqual(config["proxy-groups"][0].proxies, ["HK VLESS", "DIRECT"]);
-  assert.equal(config["rule-providers"].proxy.url, "https://3tel.github.io/proxy-rules/rules/proxy.list");
+  assert.equal(config["rule-providers"], undefined);
   assert.deepEqual(config.rules, [
     "DOMAIN-SUFFIX,internal.example,DIRECT",
-    "RULE-SET,reject,REJECT",
-    "RULE-SET,proxy,PROXY",
+    "DOMAIN-SUFFIX,ads.example,REJECT",
+    "DOMAIN-SUFFIX,openai.com,PROXY",
     "GEOIP,CN,DIRECT",
     "MATCH,PROXY",
   ]);
@@ -67,13 +66,20 @@ test("converted Clash YAML is enriched with local nodes and project rules", () =
     "  - MATCH,Subscription",
     "",
   ].join("\n");
-  const config = parseYaml(enrichClashConfig(source, [vlessNode], { ...options, finalPolicy: "DIRECT", providers: [{ id: "direct", action: "DIRECT" }], geoip: false }));
+  const config = parseYaml(enrichClashConfig(source, [vlessNode], { ...options, finalPolicy: "DIRECT", ruleSets: [{ id: "direct", action: "DIRECT", rules: ["DOMAIN-SUFFIX,example.cn,DIRECT"] }], geoip: false }));
   assert.deepEqual(config.proxies.map((proxy) => proxy.name), ["HK VLESS", "HK VLESS 2"]);
   assert.equal(config["proxy-groups"][0].name, "PROXY");
   assert.deepEqual(config["proxy-groups"][0].proxies, ["Subscription", "HK VLESS", "HK VLESS 2", "DIRECT"]);
   assert.deepEqual(config.rules, [
     "DOMAIN-SUFFIX,internal.example,DIRECT",
-    "RULE-SET,direct,DIRECT",
+    "DOMAIN-SUFFIX,example.cn,DIRECT",
     "MATCH,DIRECT",
+  ]);
+});
+
+test("Clash list rules are expanded with selected actions", () => {
+  assert.deepEqual(formatClashRuleList("# comment\nDOMAIN-SUFFIX,example.com\nIP-CIDR,10.0.0.0/8,no-resolve", "DIRECT"), [
+    "DOMAIN-SUFFIX,example.com,DIRECT",
+    "IP-CIDR,10.0.0.0/8,DIRECT,no-resolve",
   ]);
 });

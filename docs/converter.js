@@ -1,15 +1,6 @@
 export const CONVERTER_TARGETS = {
   shadowrocket: { target: "mixed", extension: "conf" },
-  clash: { target: "clash", extension: "yaml" }, clashr: { target: "clashr", extension: "yaml" },
-  quan: { target: "quan", extension: "conf" }, quanx: { target: "quanx", extension: "conf" },
-  loon: { target: "loon", extension: "conf" }, ss: { target: "ss", extension: "txt" },
-  sssub: { target: "sssub", extension: "json" }, ssd: { target: "ssd", extension: "txt" },
-  ssr: { target: "ssr", extension: "txt" }, surfboard: { target: "surfboard", extension: "conf" },
-  surge2: { target: "surge", version: "2", extension: "conf" },
-  surge3: { target: "surge", version: "3", extension: "conf" },
-  surge4: { target: "surge", version: "4", extension: "conf" },
-  trojan: { target: "trojan", extension: "txt" }, v2ray: { target: "v2ray", extension: "txt" },
-  mixed: { target: "mixed", extension: "txt" }, auto: { target: "auto", extension: "txt" },
+  clash: { target: "clash", extension: "yaml" },
 };
 
 export function isSubscriptionUrl(value) {

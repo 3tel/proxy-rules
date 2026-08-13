@@ -2,15 +2,15 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createSubconverterUrl, isDirectNodeLink, isSubscriptionUrl, subscriptionLines } from "../docs/converter.js";
 
-test("subconverter URL maps Surge 4 and merges subscription inputs", () => {
+test("subconverter URL maps Clash and merges subscription inputs", () => {
   const result = createSubconverterUrl(
     "https://converter.example.com",
     ["https://one.example/sub?a=1", "https://two.example/sub"],
-    "surge4",
+    "clash",
   );
   assert.equal(result.pathname, "/sub");
-  assert.equal(result.searchParams.get("target"), "surge");
-  assert.equal(result.searchParams.get("ver"), "4");
+  assert.equal(result.searchParams.get("target"), "clash");
+  assert.equal(result.searchParams.has("ver"), false);
   assert.equal(result.searchParams.get("url"), "https://one.example/sub?a=1|https://two.example/sub");
 });
 

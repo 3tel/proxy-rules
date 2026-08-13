@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
-import { buildClashConfig, enrichClashConfig } from "./clash-config.js";
-import { CONVERTER_TARGETS, createSubconverterUrl, isDirectNodeLink, isSubscriptionUrl, subscriptionLines } from "./converter.js";
+import { buildClashConfig, enrichClashConfig, formatClashRuleList } from "./clash-config.js";
+import { createSubconverterUrl, isDirectNodeLink, isSubscriptionUrl, subscriptionLines } from "./converter.js";
 
 const form = document.querySelector("#generator");
 const nodeInput = document.querySelector("#nodes");
@@ -14,6 +14,8 @@ let generatedNodes = [];
 let generatedExtension = "conf";
 let generatedSummary = "";
 let generatedStatus = "";
+const remoteRuleCache = new Map();
+const PUBLISHED_RULES_BASE = "https://3tel.github.io/proxy-rules/rules";
 
 document.querySelector("#clear").addEventListener("click", () => { nodeInput.value = ""; updateSummary(); nodeInput.focus(); });
 nodeInput.addEventListener("input", () => { updateSummary(); toggleConversionMode(); });
@@ -47,6 +49,7 @@ form.addEventListener("submit", async (event) => {
       generatedSummary = `Shadowrocket 配置已生成，包含 ${nodes.length} 个节点`;
       generatedStatus = "配置文件包含 [Proxy] 节点和 [Rule] 分流规则；二维码用于单独添加节点。";
     } else if (outputType.value === "clash") {
+      await ensureSelectedRulesLoaded();
       const subscriptions = lines.filter(isSubscriptionUrl);
       const nodeLinks = lines.filter(isDirectNodeLink);
       const unsupported = lines.filter((line) => !isSubscriptionUrl(line) && !isDirectNodeLink(line));
@@ -62,13 +65,9 @@ form.addEventListener("submit", async (event) => {
         : subscriptions.length
           ? "Clash 配置已生成，已合并订阅节点和分流规则"
           : `Clash 配置已生成，包含 ${nodes.length} 个节点`;
-      generatedStatus = "YAML 已包含 proxies、proxy-groups、rule-providers 和 rules；可复制或下载导入 Clash Meta。";
+      generatedStatus = "YAML 已包含 proxies、proxy-groups 和完整 rules；可复制或下载导入 Clash/Mihomo 类客户端。";
     } else {
-      generatedNodes = [];
-      generatedConfig = await convertWithSubconverter(lines, outputType.value);
-      generatedExtension = CONVERTER_TARGETS[outputType.value].extension;
-      generatedSummary = "订阅转换完成";
-      generatedStatus = "转换结果可预览、复制或下载。";
+      throw new Error("当前项目只支持 Shadowrocket 和 Clash 类客户端。");
     }
     renderOutput();
     await renderQr();
@@ -97,6 +96,7 @@ document.querySelector("#download-config").addEventListener("click", () => {
 });
 
 toggleConversionMode();
+loadProjectRules();
 
 function updateSummary() {
   const count = nodeInput.value.split(/\r?\n/).filter((line) => line.trim()).length;
@@ -106,14 +106,12 @@ function updateSummary() {
     status.textContent = "节点名称、UUID 和密码不会离开此页面。";
   } else if (outputType.value === "clash") {
     status.textContent = "订阅会通过转换服务取得节点，随后在浏览器内合并本项目分流规则。";
-  } else {
-    status.textContent = "生成时会把这些地址发送到你指定的 subconverter 服务。";
   }
 }
 
 function toggleConversionMode() {
   const localRuleFormat = outputType.value === "shadowrocket" || outputType.value === "clash";
-  const needsConverter = !localRuleFormat || inputLines().some(isSubscriptionUrl);
+  const needsConverter = inputLines().some(isSubscriptionUrl);
   document.querySelector("#converter-options").hidden = !needsConverter;
   document.querySelectorAll(".local-only").forEach((element) => { element.hidden = !localRuleFormat; });
   output.hidden = true;
@@ -317,7 +315,7 @@ function renderOutput() {
   const select = document.querySelector("#qr-target");
   select.replaceChildren();
   generatedNodes.forEach((node, index) => select.add(new Option(`节点：${node.name}`, String(index))));
-  document.querySelector("#qr-box").hidden = generatedNodes.length === 0;
+  document.querySelector("#qr-box").hidden = outputType.value !== "shadowrocket" || generatedNodes.length === 0;
   document.querySelector("#config-import-help").hidden = outputType.value !== "shadowrocket";
   output.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -353,8 +351,7 @@ function clashOptions() {
     dnsServers: document.querySelector("#dns").value.split(",").map((server) => server.trim()).filter(Boolean),
     groupMode: document.querySelector("#group-mode").value,
     finalPolicy: document.querySelector("#final-policy").value,
-    rulesBase: publicRulesBase(),
-    providers: enabledRuleProviders(),
+    ruleSets: clashRuleSets(),
     customRules: [
       ...customRules("reject", "REJECT"),
       ...customRules("proxy", "PROXY"),
@@ -370,6 +367,46 @@ function enabledRuleProviders() {
     { id: "proxy", action: "PROXY", enabled: document.querySelector("#rule-proxy").checked },
     { id: "direct", action: "DIRECT", enabled: document.querySelector("#rule-direct").checked },
   ].filter((provider) => provider.enabled);
+}
+
+function clashRuleSets() {
+  return enabledRuleProviders().map(({ id, action }) => ({
+    id,
+    action,
+    rules: formatClashRuleList(remoteRuleCache.get(id) || "", action),
+  }));
+}
+
+async function loadProjectRules() {
+  try {
+    await Promise.all(enabledRuleProviders().map(({ id }) => loadRuleList(id)));
+  } catch {
+    status.textContent = "规则列表暂未加载完成；生成 Clash 配置时会自动重试。";
+  }
+}
+
+async function ensureSelectedRulesLoaded() {
+  const results = await Promise.allSettled(enabledRuleProviders().map(({ id }) => loadRuleList(id)));
+  if (results.some((result) => result.status === "rejected")) {
+    throw new Error("加载项目规则失败，请稍后重试或检查 GitHub Pages 规则文件是否可访问。");
+  }
+}
+
+async function loadRuleList(id) {
+  if (remoteRuleCache.has(id)) return remoteRuleCache.get(id);
+  let response;
+  try {
+    response = await fetch(`${publicRulesBase()}/${id}.list`, { headers: { Accept: "text/plain" } });
+  } catch {
+    response = null;
+  }
+  if ((!response || !response.ok) && location.protocol === "file:") {
+    response = await fetch(`${PUBLISHED_RULES_BASE}/${id}.list`, { headers: { Accept: "text/plain" } });
+  }
+  if (!response || !response.ok) throw new Error(`rules/${id}.list HTTP ${response?.status || "failed"}`);
+  const text = await response.text();
+  remoteRuleCache.set(id, text);
+  return text;
 }
 
 function publicRulesBase() {

@@ -1,7 +1,7 @@
 # custom-proxy-rules
 
-将公开规则源与你自己的域名、IP/CIDR 和覆盖规则合并，并在浏览器里生成可下载的
-Shadowrocket 或 Clash 配置。
+将公开规则源与你自己的域名、IP/CIDR 和覆盖规则合并，并在浏览器里生成面向
+Shadowrocket 和 Clash/Mihomo 类客户端的配置。
 
 ## 特点
 
@@ -12,10 +12,10 @@ Shadowrocket 或 Clash 配置。
 - 私有目录默认被 Git 忽略，降低内网信息误提交风险
 - 静态网页支持 VLESS、VMess、Trojan 和 Shadowsocks 分享链接
 - 可按需启用广告拦截、代理域名、国内直连和 GEOIP 分流
-- 生成后可直接预览、复制或显示本地二维码，不会自动下载
-- 支持逐节点标准分享二维码；完整配置使用 `.conf` 文件导入
-- 提供与 subconverter 对应的客户端生成类型选择
-- Clash 目标对 VLESS、VMess、Trojan 和 SS 直链优先在浏览器本地生成，避免旧版 subconverter 无法识别 VLESS 直链
+- Shadowrocket 生成 `.conf` 配置，并提供逐节点标准分享二维码
+- Clash/Mihomo 生成 `.yaml`，节点和分流规则写在同一个文件里
+- 支持订阅链接；默认通过 `https://convert.3tel.net` 取得订阅节点
+- Clash/Mihomo 对 VLESS、VMess、Trojan 和 SS 直链优先在浏览器本地生成，避免旧版 subconverter 无法识别 VLESS 直链
 - 节点凭据只在浏览器本地处理，不上传、不存储
 - GitHub Actions 每日自动测试、构建规则并部署 GitHub Pages
 
@@ -25,30 +25,32 @@ Shadowrocket 或 Clash 配置。
 
 https://3tel.github.io/proxy-rules/
 
-粘贴节点或订阅链接、选择分流规则和策略，然后点击“生成配置”。网页会生成包含节点组和
-分流规则的临时配置，并提供预览、复制、二维码和可选下载。直接节点的 UUID、密码和服务器
-信息不会离开当前浏览器；订阅链接需要通过你指定的 subconverter 服务解析。
+粘贴节点或订阅链接、选择分流规则和策略，然后点击“生成配置”。Shadowrocket 会生成
+`.conf` 配置和节点二维码；Clash/Mihomo 会生成包含 `proxies`、`proxy-groups` 和完整
+`rules` 的 `.yaml` 文件。直接节点的 UUID、密码和服务器信息不会离开当前浏览器；订阅链接
+需要通过你指定的 subconverter 服务解析。
 
 单个节点二维码使用原始标准分享链接，可以直接扫码添加。Shadowrocket 的扫码入口不接受
 普通二维码中的完整配置正文，因此网页不会再生成无效的“整份配置二维码”。完整配置请下载
 `.conf` 文件，再从 iOS“文件”中用 Shadowrocket 打开，或进入 Shadowrocket 的“配置”页面导入。
 
-## 订阅转换
+## 客户端支持
 
-“生成类型”支持 Shadowrocket 本地配置，以及 Clash、ClashR、Quantumult、Quantumult X、
-Loon、SS、SSD、SSR、Surfboard、Surge 2/3/4、Trojan、V2Ray、Mixed 和 Auto。这些名称及
-目标参数与 [subconverter](https://github.com/tindy2013/subconverter) 保持一致。
+本项目只聚焦两类客户端：
 
-Shadowrocket 配置直接在浏览器本地生成。其他格式默认使用项目维护的
-`https://convert.3tel.net` subconverter 服务，也可以替换成其他服务地址。网页只有在用户
-明确勾选同意后才会发送订阅信息；转换服务会接触订阅地址、UUID 和密码等节点信息。
+- Shadowrocket：生成包含 `[Proxy]`、`[Proxy Group]` 和 `[Rule]` 的 `.conf`，并为每个节点生成标准分享二维码。
+- Clash/Mihomo：生成包含节点和规则的一体化 `.yaml`，规则直接写入 `rules`，不再依赖 `rule-providers` 运行时下载。
+
+订阅解析默认使用项目维护的 `https://convert.3tel.net` subconverter 服务，也可以替换成其他
+服务地址。网页只有在用户明确勾选同意后才会发送订阅信息；转换服务会接触订阅地址、UUID
+和密码等节点信息。
 
 输入框支持一行一个 HTTP/HTTPS 订阅链接，也可同时填写多个订阅地址进行合并。选择
 Shadowrocket 时，直接节点仍在浏览器本地解析；如果输入中包含订阅链接，则使用用户填写的
 subconverter 服务以 `mixed` 格式解析订阅，再与直接节点合并成带分流规则的配置。
 
-选择 Clash 时，VLESS、VMess、Trojan 或 SS 直链会直接写入 `proxies`；订阅链接会先通过
-subconverter 取得节点，再在浏览器里合并本项目的 `rule-providers`、自定义规则和最终策略。
+选择 Clash/Mihomo 时，VLESS、VMess、Trojan 或 SS 直链会直接写入 `proxies`；订阅链接会先
+通过 subconverter 取得节点，再在浏览器里合并本项目规则、自定义规则和最终策略。
 VLESS Reality 等新协议字段需要使用支持相应协议的 Clash Meta 客户端。
 
 本地构建需要 Node.js 20 或更高版本：

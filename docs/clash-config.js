@@ -75,25 +75,23 @@ function ensureProxyGroup(config, groupMode) {
 }
 
 function applyClashRules(config, options) {
-  const providers = Object.fromEntries(options.providers.map(({ id }) => [id, {
-    type: "http",
-    behavior: "classical",
-    format: "text",
-    url: `${options.rulesBase}/${id}.list`,
-    path: `./rules/${id}.list`,
-    interval: 86400,
-  }]));
-  if (Object.keys(providers).length) {
-    const currentProviders = isPlainObject(config["rule-providers"]) ? config["rule-providers"] : {};
-    config["rule-providers"] = { ...currentProviders, ...providers };
-  }
+  delete config["rule-providers"];
   config.rules = [
     ...options.customRules,
-    ...options.providers.map(({ id, action }) => `RULE-SET,${id},${action}`),
+    ...options.ruleSets.flatMap(({ rules }) => rules),
     ...(options.geoip ? ["GEOIP,CN,DIRECT"] : []),
     `MATCH,${options.finalPolicy}`,
   ];
   return config;
+}
+
+export function formatClashRuleList(text, action) {
+  return text.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith("#")).map((line) => {
+    const parts = line.split(",").map((part) => part.trim()).filter(Boolean);
+    if (parts.length < 2) return null;
+    if (isRuleAction(parts[2])) return parts.join(",");
+    return [parts[0], parts[1], action, ...parts.slice(2)].join(",");
+  }).filter(Boolean);
 }
 
 function makeProxyGroup(name, type, proxies) {
@@ -127,4 +125,8 @@ function unique(values) {
 
 function isPlainObject(value) {
   return value && typeof value === "object" && !Array.isArray(value);
+}
+
+function isRuleAction(value) {
+  return ["DIRECT", "PROXY", "REJECT"].includes(String(value || "").toUpperCase());
 }

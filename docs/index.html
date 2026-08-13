@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="把订阅、代理节点和分流规则生成 Shadowrocket 或 Clash 配置。">
+    <meta name="description" content="把订阅、代理节点和分流规则生成 Shadowrocket 或 Clash/Mihomo 配置。">
     <meta name="color-scheme" content="dark">
     <title>Custom Proxy Rules · 配置生成器</title>
     <link rel="stylesheet" href="styles.css">
@@ -16,14 +16,14 @@
         <div class="hero-copy">
           <p class="eyebrow">PRIVATE. LOCAL. READY.</p>
           <h1>把节点和规则，<br><span>变成一份配置。</span></h1>
-          <p class="lede">粘贴订阅地址，或添加 VLESS、VMess、Trojan、Shadowsocks 分享链接，生成带节点和规则的客户端配置。</p>
+          <p class="lede">聚焦 Shadowrocket 和 Clash/Mihomo：粘贴订阅地址或节点链接，生成带节点和规则的客户端配置。</p>
         </div>
         <div class="privacy"><span></span>直接节点本地处理；订阅转换使用你指定的服务</div>
       </header>
 
       <form id="generator" novalidate>
         <section class="panel panel-wide">
-          <div class="step"><span>01</span><div><h2>添加订阅或节点</h2><p>每行一个订阅地址或分享链接，可合并转换。</p></div></div>
+          <div class="step"><span>01</span><div><h2>添加订阅或节点</h2><p>每行一个订阅地址或分享链接；Shadowrocket 可生成节点二维码，Clash/Mihomo 可生成完整 YAML。</p></div></div>
           <label class="sr-only" for="nodes">节点分享链接</label>
           <textarea id="nodes" rows="9" spellcheck="false" autocomplete="off" placeholder="https://example.com/subscription&#10;vless://uuid@example.com:443?security=tls&type=ws#我的节点"></textarea>
           <div class="field-foot"><span>支持订阅 URL · vless:// · vmess:// · trojan:// · ss://</span><button class="text-button" type="button" id="clear">清空</button></div>
@@ -32,7 +32,7 @@
         <section class="panel">
           <div class="step"><span>02</span><div><h2>配置选项</h2><p>选择默认策略和节点组方式。</p></div></div>
           <div class="fields">
-            <label>生成类型<select id="output-type"><option value="shadowrocket">Shadowrocket 配置（含节点和规则）</option><option value="clash">Clash 配置（含节点和规则）</option><option value="clashr">ClashR</option><option value="quan">Quantumult</option><option value="quanx">Quantumult X</option><option value="loon">Loon</option><option value="ss">SS / Shadowrocket 节点</option><option value="sssub">SS Android</option><option value="ssd">SSD</option><option value="ssr">SSR</option><option value="surfboard">Surfboard</option><option value="surge2">Surge 2</option><option value="surge3">Surge 3</option><option value="surge4">Surge 4</option><option value="trojan">Trojan</option><option value="v2ray">V2Ray</option><option value="mixed">Mixed</option><option value="auto">Auto</option></select></label>
+            <label>生成类型<select id="output-type"><option value="shadowrocket">Shadowrocket：配置 + 节点二维码</option><option value="clash">Clash/Mihomo：节点 + 规则 YAML</option></select></label>
             <label>配置名称<input id="filename" value="custom-proxy" maxlength="48"></label>
             <label>节点策略<select id="group-mode"><option value="select">手动选择</option><option value="url-test">自动测速</option><option value="fallback">故障切换</option></select></label>
             <label>最终策略<select id="final-policy"><option value="PROXY">未匹配走代理</option><option value="DIRECT">未匹配直连</option></select></label>
@@ -73,15 +73,15 @@
 
         <section class="output-panel" id="output" hidden>
           <div class="output-head">
-            <div><p class="eyebrow">LOCAL OUTPUT</p><h2>配置已在本地生成</h2></div>
+            <div><p class="eyebrow">LOCAL OUTPUT</p><h2>配置已生成</h2></div>
             <div class="output-actions"><button type="button" id="copy-config">复制配置</button><button type="button" id="download-config">下载文件</button></div>
           </div>
-          <p id="config-import-help" class="import-help">Shadowrocket 完整配置不能通过普通二维码导入。请下载 `.conf` 文件，然后从 iOS“文件”中用 Shadowrocket 打开；也可在 Shadowrocket 的“配置”页面导入该文件。右侧二维码只用于单独添加节点。</p>
+          <p id="config-import-help" class="import-help">Shadowrocket 完整配置请下载 `.conf` 文件导入；右侧二维码只用于在 Shadowrocket 首页单独添加节点。</p>
           <div class="output-grid">
-            <div class="preview-box"><div class="box-title"><span>配置预览</span><span id="config-size"></span></div><pre id="config-preview" tabindex="0"></pre></div>
+            <div class="preview-box"><div class="box-title"><span>完整配置预览</span><span id="config-size"></span></div><pre id="config-preview" tabindex="0"></pre></div>
             <div class="qr-box" id="qr-box">
-              <div class="box-title"><span>扫码导入</span><select id="qr-target" aria-label="二维码内容"></select></div>
-              <canvas id="qr-code" width="320" height="320" aria-label="配置二维码"></canvas>
+              <div class="box-title"><span>Shadowrocket 节点二维码</span><select id="qr-target" aria-label="二维码内容"></select></div>
+              <canvas id="qr-code" width="320" height="320" aria-label="节点二维码"></canvas>
               <p id="qr-help">二维码仅包含标准节点分享链接，不会把配置文件正文错误地编码为二维码。</p>
             </div>
           </div>
