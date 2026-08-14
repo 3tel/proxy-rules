@@ -12,6 +12,7 @@ Shadowrocket 和 Clash/Mihomo 类客户端的配置。
 - 私有目录默认被 Git 忽略，降低内网信息误提交风险
 - 静态网页支持 VLESS、VMess、Trojan 和 Shadowsocks 分享链接
 - 可按需启用广告拦截、代理域名、国内直连和 GEOIP 分流
+- 在线生成器默认读取 GitHub Pages 上每日发布的抓取规则，并直接写入生成配置
 - Shadowrocket 生成 `.conf` 配置，内置节点选择、自动选择、故障转移、负载均衡、全球直连、全球拦截和漏网之鱼策略组，并提供逐节点标准分享二维码
 - Clash/Mihomo 生成 `.yaml`，节点和分流规则写在同一个文件里
 - 支持订阅链接；默认通过 `https://convert.3tel.net` 取得订阅节点
@@ -29,6 +30,15 @@ https://3tel.github.io/proxy-rules/
 `.conf` 配置和节点二维码；Clash/Mihomo 会生成包含 `proxies`、`proxy-groups` 和完整
 `rules` 的 `.yaml` 文件。直接节点的 UUID、密码和服务器信息不会离开当前浏览器；订阅链接
 需要通过你指定的 subconverter 服务解析。
+
+在线生成器默认会加载本项目发布到 GitHub Pages 的抓取规则：
+
+- `rules/reject.list` → 广告与追踪拦截
+- `rules/proxy.list` → 代理域名列表
+- `rules/direct.list` → 国内域名直连
+
+生成 Shadowrocket 或 Clash/Mihomo 配置时，这些规则会被直接合并进配置正文，不依赖客户端
+运行时再下载远程规则。
 
 单个节点二维码使用原始标准分享链接，可以直接扫码添加。Shadowrocket 的扫码入口不接受
 普通二维码中的完整配置正文，因此网页不会再生成无效的“整份配置二维码”。完整配置请下载

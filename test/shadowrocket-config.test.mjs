@@ -36,3 +36,29 @@ test("Shadowrocket rule lists map actions to policy groups", () => {
     `IP-CIDR,10.0.0.0/8,${SHADOWROCKET_POLICY.proxy},no-resolve`,
   ]);
 });
+
+test("Shadowrocket config embeds fetched project rules in rule section", () => {
+  const config = buildShadowrocketConfig(nodes, {
+    now: new Date(2026, 7, 14, 6, 32, 32),
+    dns: "system",
+    finalPolicy: "PROXY",
+    customRules: [],
+    ruleSets: [
+      {
+        id: "proxy",
+        action: "PROXY",
+        rules: mapShadowrocketRules("DOMAIN-SUFFIX,github.com\nDOMAIN-KEYWORD,pytorch", "PROXY"),
+      },
+      {
+        id: "reject",
+        action: "REJECT",
+        rules: mapShadowrocketRules("DOMAIN-SUFFIX,ads.example", "REJECT"),
+      },
+    ],
+    geoip: false,
+  });
+
+  assert.match(config, /DOMAIN-SUFFIX,github.com,🚀 节点选择/);
+  assert.match(config, /DOMAIN-KEYWORD,pytorch,🚀 节点选择/);
+  assert.match(config, /DOMAIN-SUFFIX,ads.example,🛑 全球拦截/);
+});

@@ -1,7 +1,7 @@
 import QRCode from "qrcode";
 import { buildClashConfig, enrichClashConfig, formatClashRuleList } from "./clash-config.js";
 import { createSubconverterUrl, isDirectNodeLink, isSubscriptionUrl, subscriptionLines } from "./converter.js";
-import { buildShadowrocketConfig, mapShadowrocketRules, shadowrocketPolicyForAction } from "./shadowrocket-config.js";
+import { SHADOWROCKET_POLICY, buildShadowrocketConfig, mapShadowrocketRules, shadowrocketPolicyForAction } from "./shadowrocket-config.js";
 
 const form = document.querySelector("#generator");
 const nodeInput = document.querySelector("#nodes");
@@ -15,8 +15,10 @@ let generatedNodes = [];
 let generatedExtension = "conf";
 let generatedSummary = "";
 let generatedStatus = "";
+let generatedRuleSummary = "";
 const remoteRuleCache = new Map();
 const PUBLISHED_RULES_BASE = "https://3tel.github.io/proxy-rules/rules";
+const RULE_LABELS = { reject: "REJECT", proxy: "PROXY", direct: "DIRECT" };
 
 document.querySelector("#clear").addEventListener("click", () => { nodeInput.value = ""; updateSummary(); nodeInput.focus(); });
 nodeInput.addEventListener("input", () => { updateSummary(); toggleConversionMode(); });
@@ -49,7 +51,8 @@ form.addEventListener("submit", async (event) => {
       generatedConfig = buildConfig(nodes);
       generatedExtension = "conf";
       generatedSummary = `Shadowrocket 配置已生成，包含 ${nodes.length} 个节点`;
-      generatedStatus = "配置文件包含 [Proxy] 节点和 [Rule] 分流规则；二维码用于单独添加节点。";
+      generatedRuleSummary = selectedRuleSummary("Shadowrocket");
+      generatedStatus = `配置文件包含 [Proxy] 节点和 [Rule] 分流规则；${generatedRuleSummary}；二维码用于单独添加节点。`;
     } else if (outputType.value === "clash") {
       await ensureSelectedRulesLoaded();
       const subscriptions = lines.filter(isSubscriptionUrl);
@@ -67,7 +70,8 @@ form.addEventListener("submit", async (event) => {
         : subscriptions.length
           ? "Clash 配置已生成，已合并订阅节点和分流规则"
           : `Clash 配置已生成，包含 ${nodes.length} 个节点`;
-      generatedStatus = "YAML 已包含 proxies、proxy-groups 和完整 rules；可复制或下载导入 Clash/Mihomo 类客户端。";
+      generatedRuleSummary = selectedRuleSummary("Clash");
+      generatedStatus = `YAML 已包含 proxies、proxy-groups 和完整 rules；${generatedRuleSummary}；可复制或下载导入 Clash/Mihomo 类客户端。`;
     } else {
       throw new Error("当前项目只支持 Shadowrocket 和 Clash 类客户端。");
     }
@@ -121,6 +125,7 @@ function toggleConversionMode() {
   generatedNodes = [];
   generatedSummary = "";
   generatedStatus = "";
+  generatedRuleSummary = "";
   status.textContent = needsConverter
     ? "订阅地址或所选格式将使用你指定的 subconverter 服务转换。"
     : "节点和配置只在当前浏览器处理。";
@@ -377,8 +382,9 @@ function shadowrocketRuleSets() {
 async function loadProjectRules() {
   try {
     await Promise.all(enabledRuleProviders().map(({ id }) => loadRuleList(id)));
+    updateRuleCounts();
   } catch {
-    status.textContent = "规则列表暂未加载完成；生成 Clash 配置时会自动重试。";
+    status.textContent = "规则列表暂未加载完成；生成配置时会自动重试。";
   }
 }
 
@@ -387,6 +393,7 @@ async function ensureSelectedRulesLoaded() {
   if (results.some((result) => result.status === "rejected")) {
     throw new Error("加载项目规则失败，请稍后重试或检查 GitHub Pages 规则文件是否可访问。");
   }
+  updateRuleCounts();
 }
 
 async function loadRuleList(id) {
@@ -403,6 +410,7 @@ async function loadRuleList(id) {
   if (!response || !response.ok) throw new Error(`rules/${id}.list HTTP ${response?.status || "failed"}`);
   const text = await response.text();
   remoteRuleCache.set(id, text);
+  updateRuleCount(id);
   return text;
 }
 
@@ -412,11 +420,51 @@ function publicRulesBase() {
 
 function customRules(id, action) {
   return document.querySelector(`#custom-${id}`).value.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith("#")).map((line) => {
-    if (line.includes(",")) return line;
+    if (line.includes(",")) return normalizeCustomRule(line, action);
     if (/^(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?$/.test(line)) return `IP-CIDR,${line.includes("/") ? line : `${line}/32`},${action},no-resolve`;
     if (line.includes(":")) return `IP-CIDR6,${line.includes("/") ? line : `${line}/128`},${action},no-resolve`;
     return `DOMAIN-SUFFIX,${line.replace(/^\*\./, "").toLowerCase()},${action}`;
   });
+}
+
+function normalizeCustomRule(line, action) {
+  const parts = line.split(",").map((part) => part.trim()).filter(Boolean);
+  if (parts.length < 2) return line;
+  const start = isRuleAction(parts[2]) || isShadowrocketPolicy(parts[2]) ? 3 : 2;
+  return [parts[0], parts[1], action, ...parts.slice(start)].join(",");
+}
+
+function selectedRuleSummary(type) {
+  const providers = enabledRuleProviders();
+  if (!providers.length) return `${type} 未启用本项目抓取规则`;
+  const items = providers.map(({ id }) => `${RULE_LABELS[id]} ${countRuleLines(remoteRuleCache.get(id) || "").toLocaleString()} 条`);
+  return `已合并本项目每日抓取规则：${items.join("、")}`;
+}
+
+function updateRuleCounts() {
+  for (const id of Object.keys(RULE_LABELS)) updateRuleCount(id);
+}
+
+function updateRuleCount(id) {
+  const element = document.querySelector(`#rule-${id}-count`);
+  if (!element) return;
+  if (!remoteRuleCache.has(id)) {
+    element.textContent = `${RULE_LABELS[id]} · 加载中`;
+    return;
+  }
+  element.textContent = `${RULE_LABELS[id]} · ${countRuleLines(remoteRuleCache.get(id)).toLocaleString()} 条`;
+}
+
+function countRuleLines(text) {
+  return text.split(/\r?\n/).filter((line) => line.trim() && !line.trim().startsWith("#")).length;
+}
+
+function isRuleAction(value) {
+  return ["DIRECT", "PROXY", "REJECT"].includes(String(value || "").toUpperCase());
+}
+
+function isShadowrocketPolicy(value) {
+  return Object.values(SHADOWROCKET_POLICY).includes(value);
 }
 
 function uniqueNames(nodes) {
