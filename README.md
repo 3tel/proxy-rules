@@ -12,9 +12,9 @@ Shadowrocket 和 Clash/Mihomo 类客户端的配置。
 - 私有目录默认被 Git 忽略，降低内网信息误提交风险
 - 静态网页支持 VLESS、VMess、Trojan 和 Shadowsocks 分享链接
 - 可按需启用广告拦截、代理域名、国内直连和 GEOIP 分流
-- 在线生成器默认读取 GitHub Pages 上每日发布的抓取规则，并直接写入生成配置
+- 在线生成器默认引用 GitHub Pages 上每日发布的抓取规则，不展开十几万条规则正文
 - Shadowrocket 生成 `.conf` 配置，内置节点选择、自动选择、故障转移、负载均衡、全球直连、全球拦截和漏网之鱼策略组，并提供逐节点标准分享二维码
-- Clash/Mihomo 生成 `.yaml`，节点和分流规则写在同一个文件里
+- Clash/Mihomo 生成 `.yaml`，节点、策略组、远程规则提供者和分流引用写在同一个文件里
 - 支持订阅链接；默认通过 `https://convert.3tel.net` 取得订阅节点
 - Clash/Mihomo 对 VLESS、VMess、Trojan 和 SS 直链优先在浏览器本地生成，避免旧版 subconverter 无法识别 VLESS 直链
 - 节点凭据只在浏览器本地处理，不上传、不存储
@@ -31,14 +31,15 @@ https://3tel.github.io/proxy-rules/
 `rules` 的 `.yaml` 文件。直接节点的 UUID、密码和服务器信息不会离开当前浏览器；订阅链接
 需要通过你指定的 subconverter 服务解析。
 
-在线生成器默认会加载本项目发布到 GitHub Pages 的抓取规则：
+在线生成器默认会引用本项目发布到 GitHub Pages 的抓取规则：
 
 - `rules/reject.list` → 广告与追踪拦截
 - `rules/proxy.list` → 代理域名列表
 - `rules/direct.list` → 国内域名直连
 
-生成 Shadowrocket 或 Clash/Mihomo 配置时，这些规则会被直接合并进配置正文，不依赖客户端
-运行时再下载远程规则。
+生成 Shadowrocket 配置时，会使用 `RULE-SET,URL,策略组` 引用远程规则。生成 Clash/Mihomo
+配置时，会使用 `rule-providers` 定义远程规则，再在 `rules` 中用 `RULE-SET,名称,策略`
+引用。临时自定义规则仍会直接写进本次生成的配置。
 
 单个节点二维码使用原始标准分享链接，可以直接扫码添加。Shadowrocket 的扫码入口不接受
 普通二维码中的完整配置正文，因此网页不会再生成无效的“整份配置二维码”。完整配置请下载
@@ -49,7 +50,7 @@ https://3tel.github.io/proxy-rules/
 本项目只聚焦两类客户端：
 
 - Shadowrocket：生成包含 `[General]`、`[Proxy]`、多策略 `[Proxy Group]` 和 `[Rule]` 的 `.conf`，并为每个节点生成标准分享二维码。
-- Clash/Mihomo：生成包含节点和规则的一体化 `.yaml`，规则直接写入 `rules`，不再依赖 `rule-providers` 运行时下载。
+- Clash/Mihomo：生成包含节点、策略组、`rule-providers` 和 `rules` 的一体化 `.yaml`，抓取规则通过远程 provider 引用。
 
 订阅解析默认使用项目维护的 `https://convert.3tel.net` subconverter 服务，也可以替换成其他
 服务地址。网页只有在用户明确勾选同意后才会发送订阅信息；转换服务会接触订阅地址、UUID
@@ -62,7 +63,7 @@ Shadowrocket 的 PROXY 规则会指向 `🚀 节点选择`，DIRECT 规则会指
 规则会指向 `🛑 全球拦截`，最终未匹配流量默认进入 `🐟 漏网之鱼`。
 
 选择 Clash/Mihomo 时，VLESS、VMess、Trojan 或 SS 直链会直接写入 `proxies`；订阅链接会先
-通过 subconverter 取得节点，再在浏览器里合并本项目规则、自定义规则和最终策略。
+通过 subconverter 取得节点，再在浏览器里合并本项目远程规则引用、自定义规则和最终策略。
 VLESS Reality 等新协议字段需要使用支持相应协议的 Clash Meta 客户端。
 
 本地构建需要 Node.js 20 或更高版本：

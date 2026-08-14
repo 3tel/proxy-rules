@@ -1,7 +1,7 @@
 import QRCode from "qrcode";
-import { buildClashConfig, enrichClashConfig, formatClashRuleList } from "./clash-config.js";
+import { buildClashConfig, enrichClashConfig } from "./clash-config.js";
 import { createSubconverterUrl, isDirectNodeLink, isSubscriptionUrl, subscriptionLines } from "./converter.js";
-import { SHADOWROCKET_POLICY, buildShadowrocketConfig, mapShadowrocketRules, shadowrocketPolicyForAction } from "./shadowrocket-config.js";
+import { SHADOWROCKET_POLICY, buildShadowrocketConfig, shadowrocketPolicyForAction } from "./shadowrocket-config.js";
 
 const form = document.querySelector("#generator");
 const nodeInput = document.querySelector("#nodes");
@@ -36,7 +36,6 @@ form.addEventListener("submit", async (event) => {
     const lines = nodeInput.value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
     if (!lines.length) throw new Error("请至少添加一个订阅地址或节点分享链接。");
     if (outputType.value === "shadowrocket") {
-      await ensureSelectedRulesLoaded();
       const subscriptions = lines.filter(isSubscriptionUrl);
       const nodeLinks = lines.filter((line) => !isSubscriptionUrl(line));
       let resolvedLinks = nodeLinks;
@@ -52,9 +51,8 @@ form.addEventListener("submit", async (event) => {
       generatedExtension = "conf";
       generatedSummary = `Shadowrocket 配置已生成，包含 ${nodes.length} 个节点`;
       generatedRuleSummary = selectedRuleSummary("Shadowrocket");
-      generatedStatus = `配置文件包含 [Proxy] 节点和 [Rule] 分流规则；${generatedRuleSummary}；二维码用于单独添加节点。`;
+      generatedStatus = `配置文件包含 [Proxy] 节点和 RULE-SET 分流引用；${generatedRuleSummary}；二维码用于单独添加节点。`;
     } else if (outputType.value === "clash") {
-      await ensureSelectedRulesLoaded();
       const subscriptions = lines.filter(isSubscriptionUrl);
       const nodeLinks = lines.filter(isDirectNodeLink);
       const unsupported = lines.filter((line) => !isSubscriptionUrl(line) && !isDirectNodeLink(line));
@@ -68,10 +66,10 @@ form.addEventListener("submit", async (event) => {
       generatedSummary = subscriptions.length && nodes.length
         ? `Clash 配置已生成，已合并订阅节点和 ${nodes.length} 个手工节点`
         : subscriptions.length
-          ? "Clash 配置已生成，已合并订阅节点和分流规则"
+          ? "Clash 配置已生成，已合并订阅节点和分流引用"
           : `Clash 配置已生成，包含 ${nodes.length} 个节点`;
       generatedRuleSummary = selectedRuleSummary("Clash");
-      generatedStatus = `YAML 已包含 proxies、proxy-groups 和完整 rules；${generatedRuleSummary}；可复制或下载导入 Clash/Mihomo 类客户端。`;
+      generatedStatus = `YAML 已包含 proxies、proxy-groups、rule-providers 和 rules；${generatedRuleSummary}；可复制或下载导入 Clash/Mihomo 类客户端。`;
     } else {
       throw new Error("当前项目只支持 Shadowrocket 和 Clash 类客户端。");
     }
@@ -111,7 +109,7 @@ function updateSummary() {
   if ((outputType.value === "shadowrocket" || outputType.value === "clash") && !hasSubscription) {
     status.textContent = "节点名称、UUID 和密码不会离开此页面。";
   } else if (outputType.value === "clash") {
-    status.textContent = "订阅会通过转换服务取得节点，随后在浏览器内合并本项目分流规则。";
+    status.textContent = "订阅会通过转换服务取得节点，随后在浏览器内生成本项目远程规则引用。";
   }
 }
 
@@ -292,7 +290,7 @@ function buildConfig(nodes) {
   return buildShadowrocketConfig(nodes, {
     dns: clean(document.querySelector("#dns").value) || "system",
     finalPolicy: document.querySelector("#final-policy").value,
-    ruleSets: shadowrocketRuleSets(),
+    ruleSets: ruleSetReferences(),
     customRules: [
       ...customRules("reject", shadowrocketPolicyForAction("REJECT")),
       ...customRules("proxy", shadowrocketPolicyForAction("PROXY")),
@@ -345,7 +343,7 @@ function clashOptions() {
     dnsServers: document.querySelector("#dns").value.split(",").map((server) => server.trim()).filter(Boolean),
     groupMode: document.querySelector("#group-mode").value,
     finalPolicy: document.querySelector("#final-policy").value,
-    ruleSets: clashRuleSets(),
+    ruleSets: ruleSetReferences(),
     customRules: [
       ...customRules("reject", "REJECT"),
       ...customRules("proxy", "PROXY"),
@@ -363,19 +361,11 @@ function enabledRuleProviders() {
   ].filter((provider) => provider.enabled);
 }
 
-function clashRuleSets() {
+function ruleSetReferences() {
   return enabledRuleProviders().map(({ id, action }) => ({
     id,
     action,
-    rules: formatClashRuleList(remoteRuleCache.get(id) || "", action),
-  }));
-}
-
-function shadowrocketRuleSets() {
-  return enabledRuleProviders().map(({ id, action }) => ({
-    id,
-    action,
-    rules: mapShadowrocketRules(remoteRuleCache.get(id) || "", action),
+    url: `${activeRulesBase()}/${id}.list`,
   }));
 }
 
@@ -386,14 +376,6 @@ async function loadProjectRules() {
   } catch {
     status.textContent = "规则列表暂未加载完成；生成配置时会自动重试。";
   }
-}
-
-async function ensureSelectedRulesLoaded() {
-  const results = await Promise.allSettled(enabledRuleProviders().map(({ id }) => loadRuleList(id)));
-  if (results.some((result) => result.status === "rejected")) {
-    throw new Error("加载项目规则失败，请稍后重试或检查 GitHub Pages 规则文件是否可访问。");
-  }
-  updateRuleCounts();
 }
 
 async function loadRuleList(id) {
@@ -418,6 +400,10 @@ function publicRulesBase() {
   return `${location.origin}${location.pathname.replace(/\/[^/]*$/, "/")}rules`;
 }
 
+function activeRulesBase() {
+  return location.protocol === "http:" || location.protocol === "https:" ? publicRulesBase() : PUBLISHED_RULES_BASE;
+}
+
 function customRules(id, action) {
   return document.querySelector(`#custom-${id}`).value.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith("#")).map((line) => {
     if (line.includes(",")) return normalizeCustomRule(line, action);
@@ -437,8 +423,10 @@ function normalizeCustomRule(line, action) {
 function selectedRuleSummary(type) {
   const providers = enabledRuleProviders();
   if (!providers.length) return `${type} 未启用本项目抓取规则`;
-  const items = providers.map(({ id }) => `${RULE_LABELS[id]} ${countRuleLines(remoteRuleCache.get(id) || "").toLocaleString()} 条`);
-  return `已合并本项目每日抓取规则：${items.join("、")}`;
+  const items = providers.map(({ id }) => remoteRuleCache.has(id)
+    ? `${RULE_LABELS[id]} ${countRuleLines(remoteRuleCache.get(id)).toLocaleString()} 条`
+    : `${RULE_LABELS[id]} 远程规则`);
+  return `已引用本项目每日抓取规则：${items.join("、")}`;
 }
 
 function updateRuleCounts() {

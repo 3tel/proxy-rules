@@ -30,7 +30,7 @@
         </section>
 
         <section class="panel">
-          <div class="step"><span>02</span><div><h2>配置选项</h2><p>默认会合并本项目每日抓取并发布的分流规则。</p></div></div>
+          <div class="step"><span>02</span><div><h2>配置选项</h2><p>默认引用本项目每日抓取并发布的远程规则。</p></div></div>
           <div class="fields">
             <label>生成类型<select id="output-type"><option value="shadowrocket">Shadowrocket：配置 + 节点二维码</option><option value="clash">Clash/Mihomo：节点 + 规则 YAML</option></select></label>
             <label>配置名称<input id="filename" value="custom-proxy" maxlength="48"></label>
@@ -49,7 +49,7 @@
             <label><input type="checkbox" id="rule-proxy" checked><span>代理域名列表<small id="rule-proxy-count">PROXY · 加载中</small></span></label>
             <label><input type="checkbox" id="rule-direct" checked><span>国内域名直连<small id="rule-direct-count">DIRECT · 加载中</small></span></label>
             <label><input type="checkbox" id="rule-geoip" checked><span>中国 IP 直连<small>GEOIP CN</small></span></label>
-            <p class="rule-source-note" id="rule-source-note">生成配置时会把这些已抓取规则直接写入配置正文，不依赖客户端运行时再下载。</p>
+            <p class="rule-source-note" id="rule-source-note">生成配置时只写入远程规则引用，不会把十几万条规则展开到配置正文。</p>
           </fieldset>
         </section>
 

@@ -31,7 +31,7 @@ function parseClashYaml(configText) {
   try {
     config = parseYaml(configText);
   } catch {
-    throw new Error("转换服务返回的 Clash YAML 无法解析，无法合并本项目分流规则。");
+    throw new Error("转换服务返回的 Clash YAML 无法解析，无法添加本项目规则引用。");
   }
   if (!isPlainObject(config)) throw new Error("转换服务返回的 Clash 配置不是有效对象。");
   return config;
@@ -75,23 +75,29 @@ function ensureProxyGroup(config, groupMode) {
 }
 
 function applyClashRules(config, options) {
-  delete config["rule-providers"];
+  applyClashRuleProviders(config, options.ruleSets);
   config.rules = [
     ...options.customRules,
-    ...options.ruleSets.flatMap(({ rules }) => rules),
+    ...options.ruleSets.map(({ id, action }) => `RULE-SET,${id},${action}`),
     ...(options.geoip ? ["GEOIP,CN,DIRECT"] : []),
     `MATCH,${options.finalPolicy}`,
   ];
   return config;
 }
 
-export function formatClashRuleList(text, action) {
-  return text.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith("#")).map((line) => {
-    const parts = line.split(",").map((part) => part.trim()).filter(Boolean);
-    if (parts.length < 2) return null;
-    if (isRuleAction(parts[2])) return parts.join(",");
-    return [parts[0], parts[1], action, ...parts.slice(2)].join(",");
-  }).filter(Boolean);
+function applyClashRuleProviders(config, ruleSets) {
+  if (!ruleSets.length) {
+    delete config["rule-providers"];
+    return;
+  }
+  config["rule-providers"] = Object.fromEntries(ruleSets.map(({ id, url }) => [id, {
+    type: "http",
+    behavior: "classical",
+    format: "text",
+    url,
+    path: `./rules/${id}.list`,
+    interval: 86400,
+  }]));
 }
 
 function makeProxyGroup(name, type, proxies) {
@@ -125,8 +131,4 @@ function unique(values) {
 
 function isPlainObject(value) {
   return value && typeof value === "object" && !Array.isArray(value);
-}
-
-function isRuleAction(value) {
-  return ["DIRECT", "PROXY", "REJECT"].includes(String(value || "").toUpperCase());
 }

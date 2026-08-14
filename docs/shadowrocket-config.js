@@ -14,7 +14,7 @@ export function buildShadowrocketConfig(nodes, options) {
   const proxyCandidates = nodeNames.length ? nodeNames.join(",") : "DIRECT";
   const selectedRules = [
     ...options.customRules,
-    ...options.ruleSets.flatMap(({ rules }) => rules),
+    ...options.ruleSets.flatMap((ruleSet) => ruleSet.url ? [`RULE-SET,${ruleSet.url},${shadowrocketPolicyForAction(ruleSet.action)}`] : []),
     ...(options.geoip ? [`GEOIP,CN,${SHADOWROCKET_POLICY.direct}`] : []),
     `FINAL,${options.finalPolicy === "DIRECT" ? SHADOWROCKET_POLICY.direct : SHADOWROCKET_POLICY.final}`,
   ];
@@ -47,28 +47,10 @@ export function buildShadowrocketConfig(nodes, options) {
   ].join("\n");
 }
 
-export function mapShadowrocketRules(text, action) {
-  const target = shadowrocketPolicyForAction(action);
-  return text.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith("#")).map((line) => {
-    const parts = line.split(",").map((part) => part.trim()).filter(Boolean);
-    if (parts.length < 2) return null;
-    return [parts[0], parts[1], target, ...shadowrocketRuleOptions(parts)].join(",");
-  }).filter(Boolean);
-}
-
 export function shadowrocketPolicyForAction(action) {
   if (action === "DIRECT") return SHADOWROCKET_POLICY.direct;
   if (action === "REJECT") return SHADOWROCKET_POLICY.reject;
   return SHADOWROCKET_POLICY.proxy;
-}
-
-function shadowrocketRuleOptions(parts) {
-  const start = isActionOrPolicy(parts[2]) ? 3 : 2;
-  return parts.slice(start);
-}
-
-function isActionOrPolicy(value) {
-  return ["DIRECT", "PROXY", "REJECT"].includes(String(value || "").toUpperCase()) || Object.values(SHADOWROCKET_POLICY).includes(value);
 }
 
 function formatDate(date) {
