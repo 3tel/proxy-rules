@@ -30,13 +30,13 @@
         </section>
 
         <section class="panel">
-          <div class="step"><span>02</span><div><h2>配置选项</h2><p>默认引用本项目每日抓取并发布的远程规则。</p></div></div>
+          <div class="step"><span>02</span><div><h2>配置选项</h2><p>默认引用本项目每日抓取并发布的远程规则；Clash/Mihomo 默认使用 fake-ip DNS 模板。</p></div></div>
           <div class="fields">
             <label>生成类型<select id="output-type"><option value="shadowrocket">Shadowrocket：规则配置 + 节点二维码</option><option value="clash">Clash/Mihomo：节点 + 规则 YAML</option></select></label>
             <label>配置名称<input id="filename" value="custom-proxy" maxlength="48"></label>
             <label>Clash 节点策略<select id="group-mode"><option value="select">手动选择</option><option value="url-test">自动测速</option><option value="fallback">故障切换</option></select></label>
             <label>最终策略<select id="final-policy"><option value="PROXY">未匹配走代理</option><option value="DIRECT">未匹配直连</option></select></label>
-            <label>DNS<input id="dns" value="223.5.5.5, 119.29.29.29"></label>
+            <label id="dns-field">Shadowrocket DNS<input id="dns" value="system"></label>
           </div>
           <div class="converter-options" id="converter-options" hidden>
             <label>Subconverter 服务地址<input id="converter-url" type="url" value="https://convert.3tel.net" placeholder="https://convert.3tel.net"></label>

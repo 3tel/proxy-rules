@@ -1,6 +1,55 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 
 const HEALTH_CHECK_URL = "http://www.gstatic.com/generate_204";
+const CLASH_DNS_CONFIG = {
+  enable: true,
+  ipv6: true,
+  "enhanced-mode": "fake-ip",
+  "fake-ip-range": "240.0.0.1/8",
+  "cache-algorithm": "arc",
+  "use-hosts": true,
+  "use-system-hosts": true,
+  "fake-ip-filter-mode": "blacklist",
+  "fake-ip-filter": [
+    "*.lan",
+    "*.local",
+    "*.localhost",
+    "*.localdomain",
+    "*.home.arpa",
+    "localhost",
+    "time.*.com",
+    "ntp.*.com",
+    "+.pool.ntp.org",
+    "+.stun.*",
+    "+.stun.*.*",
+    "+.stun.*.*.*",
+  ],
+  "default-nameserver": [
+    "223.5.5.5",
+    "119.29.29.29",
+  ],
+  nameserver: [
+    "https://dns.alidns.com/dns-query",
+    "https://doh.pub/dns-query",
+  ],
+  "proxy-server-nameserver": [
+    "https://dns.alidns.com/dns-query",
+    "https://doh.pub/dns-query",
+  ],
+  "nameserver-policy": {
+    "geosite:private": [
+      "https://dns.alidns.com/dns-query",
+    ],
+    "geosite:cn": [
+      "https://dns.alidns.com/dns-query",
+      "https://doh.pub/dns-query",
+    ],
+    "geosite:geolocation-!cn": [
+      "https://1.1.1.1/dns-query#PROXY",
+      "https://dns.google/dns-query#PROXY",
+    ],
+  },
+};
 
 export function buildClashConfig(nodes, options) {
   const config = {
@@ -8,10 +57,7 @@ export function buildClashConfig(nodes, options) {
     "allow-lan": false,
     mode: "rule",
     ipv6: true,
-    dns: {
-      enable: true,
-      nameserver: options.dnsServers,
-    },
+    dns: createClashDnsConfig(),
     proxies: nodes.map((node) => ({ name: node.name, ...node.clash })),
     "proxy-groups": [makeProxyGroup("PROXY", options.groupMode, nodes.map((node) => node.name))],
   };
@@ -42,10 +88,7 @@ function applyClashDefaults(config, options) {
   if (!("mixed-port" in config) && !("port" in config) && !("socks-port" in config)) config["mixed-port"] = 7890;
   if (!("allow-lan" in config)) config["allow-lan"] = false;
   if (!("ipv6" in config)) config.ipv6 = true;
-  if (options.dnsServers.length) {
-    const currentDns = isPlainObject(config.dns) ? config.dns : {};
-    config.dns = { ...currentDns, enable: true, nameserver: options.dnsServers };
-  }
+  config.dns = createClashDnsConfig();
   if (!Array.isArray(config.proxies)) config.proxies = [];
 }
 
@@ -112,6 +155,10 @@ function makeProxyGroup(name, type, proxies) {
 
 function stringifyClashConfig(config) {
   return stringifyYaml(config, { lineWidth: 0 });
+}
+
+function createClashDnsConfig() {
+  return JSON.parse(JSON.stringify(CLASH_DNS_CONFIG));
 }
 
 function nextName(name, usedNames) {

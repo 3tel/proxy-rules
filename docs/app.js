@@ -71,7 +71,7 @@ form.addEventListener("submit", async (event) => {
           ? "Clash 配置已生成，已合并订阅节点和分流引用"
           : `Clash 配置已生成，包含 ${nodes.length} 个节点`;
       generatedRuleSummary = selectedRuleSummary("Clash");
-      generatedStatus = `YAML 已包含 proxies、proxy-groups、rule-providers 和 rules；${generatedRuleSummary}；可复制或下载导入 Clash/Mihomo 类客户端。`;
+      generatedStatus = `YAML 已包含 proxies、proxy-groups、fake-ip DNS、rule-providers 和 rules；${generatedRuleSummary}；可复制或下载导入 Clash/Mihomo 类客户端。`;
     } else {
       throw new Error("当前项目只支持 Shadowrocket 和 Clash 类客户端。");
     }
@@ -113,10 +113,12 @@ function updateSummary() {
     : outputType.value === "shadowrocket"
       ? "可直接生成 Shadowrocket 规则配置"
       : "等待添加订阅或节点";
-  if ((outputType.value === "shadowrocket" || outputType.value === "clash") && !hasSubscription) {
+  if (outputType.value === "clash" && !hasSubscription) {
+    status.textContent = "Clash/Mihomo 会使用内置 fake-ip DNS 模板；节点名称、UUID 和密码不会离开此页面。";
+  } else if (outputType.value === "shadowrocket" && !hasSubscription) {
     status.textContent = "节点名称、UUID 和密码不会离开此页面。";
   } else if (outputType.value === "clash") {
-    status.textContent = "订阅会通过转换服务取得节点，随后在浏览器内生成本项目远程规则引用。";
+    status.textContent = "订阅会通过转换服务取得节点，随后在浏览器内生成 fake-ip DNS 和本项目远程规则引用。";
   }
 }
 
@@ -125,6 +127,7 @@ function toggleConversionMode() {
   const needsConverter = inputLines().some(isSubscriptionUrl);
   document.querySelector("#converter-options").hidden = !needsConverter;
   document.querySelectorAll(".local-only").forEach((element) => { element.hidden = !localRuleFormat; });
+  document.querySelector("#dns-field").hidden = outputType.value !== "shadowrocket";
   output.hidden = true;
   generatedConfig = "";
   generatedNodes = [];
@@ -348,7 +351,6 @@ async function renderQr() {
 
 function clashOptions() {
   return {
-    dnsServers: document.querySelector("#dns").value.split(",").map((server) => server.trim()).filter(Boolean),
     groupMode: document.querySelector("#group-mode").value,
     finalPolicy: document.querySelector("#final-policy").value,
     ruleSets: ruleSetReferences(),

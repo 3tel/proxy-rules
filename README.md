@@ -14,7 +14,7 @@ Shadowrocket 和 Clash/Mihomo 类客户端的配置。
 - 可按需启用广告拦截、代理域名、国内直连和 GEOIP 分流
 - 在线生成器默认引用 GitHub Pages 上每日发布的抓取规则，不展开十几万条规则正文
 - Shadowrocket 生成不内嵌节点的轻量 `.conf` 规则配置，并提供逐节点标准分享二维码
-- Clash/Mihomo 生成 `.yaml`，节点、策略组、远程规则提供者和分流引用写在同一个文件里
+- Clash/Mihomo 生成 `.yaml`，节点、策略组、fake-ip DNS、远程规则提供者和分流引用写在同一个文件里
 - 支持订阅链接；默认通过 `https://convert.3tel.net` 取得订阅节点
 - Clash/Mihomo 对 VLESS、VMess、Trojan 和 SS 直链优先在浏览器本地生成，避免旧版 subconverter 无法识别 VLESS 直链
 - 节点凭据只在浏览器本地处理，不上传、不存储
@@ -28,7 +28,7 @@ https://3tel.github.io/proxy-rules/
 
 粘贴节点或订阅链接、选择分流规则和策略，然后点击“生成配置”。Shadowrocket 会生成不含节点
 的 `.conf` 规则配置；如果输入了节点或订阅，也会额外生成节点二维码。Clash/Mihomo 会生成
-包含 `proxies`、`proxy-groups`、`rule-providers` 和 `rules` 的 `.yaml` 文件。直接节点的
+包含 `proxies`、`proxy-groups`、fake-ip DNS、`rule-providers` 和 `rules` 的 `.yaml` 文件。直接节点的
 UUID、密码和服务器信息不会离开当前浏览器；订阅链接需要通过你指定的 subconverter 服务解析。
 
 在线生成器默认会引用本项目发布到 GitHub Pages 的抓取规则：
@@ -51,7 +51,7 @@ UUID、密码和服务器信息不会离开当前浏览器；订阅链接需要�
 本项目只聚焦两类客户端：
 
 - Shadowrocket：生成包含 `[General]` 和 `[Rule]` 的轻量 `.conf`，不内嵌节点，并为每个节点生成标准分享二维码。
-- Clash/Mihomo：生成包含节点、策略组、`rule-providers` 和 `rules` 的一体化 `.yaml`，抓取规则通过远程 provider 引用。
+- Clash/Mihomo：生成包含节点、策略组、fake-ip DNS、`rule-providers` 和 `rules` 的一体化 `.yaml`，抓取规则通过远程 provider 引用。
 
 订阅解析默认使用项目维护的 `https://convert.3tel.net` subconverter 服务，也可以替换成其他
 服务地址。网页只有在用户明确勾选同意后才会发送订阅信息；转换服务会接触订阅地址、UUID
@@ -66,6 +66,10 @@ Shadowrocket 时，可以不填写任何节点，直接生成规则配置。直�
 选择 Clash/Mihomo 时，VLESS、VMess、Trojan 或 SS 直链会直接写入 `proxies`；订阅链接会先
 通过 subconverter 取得节点，再在浏览器里合并本项目远程规则引用、自定义规则和最终策略。
 VLESS Reality 等新协议字段需要使用支持相应协议的 Clash Meta 客户端。
+
+Clash/Mihomo 生成的 DNS 默认使用 fake-ip 模式：`fake-ip-range` 为 `240.0.0.1/8`，国内默认
+DoH 为阿里 DNS 和腾讯 DNS，海外 `geosite:geolocation-!cn` DNS 请求通过 `#PROXY` 走代理。
+订阅转换服务返回的 DNS 会被本项目模板覆盖，保证生成配置的 DNS 行为一致。
 
 本地构建需要 Node.js 20 或更高版本：
 
