@@ -22,7 +22,7 @@ const RULE_LABELS = { reject: "REJECT", proxy: "PROXY", direct: "DIRECT" };
 
 document.querySelector("#clear").addEventListener("click", () => { nodeInput.value = ""; updateSummary(); nodeInput.focus(); });
 nodeInput.addEventListener("input", () => { updateSummary(); toggleConversionMode(); });
-outputType.addEventListener("change", toggleConversionMode);
+outputType.addEventListener("change", () => { toggleConversionMode(); updateSummary(); });
 document.querySelectorAll(".rule-tabs button").forEach((button) => button.addEventListener("click", () => {
   document.querySelectorAll(".rule-tabs button,.rule-input").forEach((item) => item.classList.remove("active"));
   button.classList.add("active");
@@ -34,7 +34,7 @@ form.addEventListener("submit", async (event) => {
   messages.textContent = "";
   try {
     const lines = nodeInput.value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-    if (!lines.length) throw new Error("请至少添加一个订阅地址或节点分享链接。");
+    if (!lines.length && outputType.value !== "shadowrocket") throw new Error("请至少添加一个订阅地址或节点分享链接。");
     if (outputType.value === "shadowrocket") {
       const subscriptions = lines.filter(isSubscriptionUrl);
       const nodeLinks = lines.filter((line) => !isSubscriptionUrl(line));
@@ -49,9 +49,11 @@ form.addEventListener("submit", async (event) => {
       generatedNodes = nodes;
       generatedConfig = buildConfig(nodes);
       generatedExtension = "conf";
-      generatedSummary = `Shadowrocket 配置已生成，包含 ${nodes.length} 个节点`;
+      generatedSummary = nodes.length
+        ? `Shadowrocket 规则配置已生成，可扫码添加 ${nodes.length} 个节点`
+        : "Shadowrocket 规则配置已生成，不包含节点";
       generatedRuleSummary = selectedRuleSummary("Shadowrocket");
-      generatedStatus = `配置文件包含 [Proxy] 节点和 RULE-SET 分流引用；${generatedRuleSummary}；二维码用于单独添加节点。`;
+      generatedStatus = `配置文件不包含 [Proxy] 节点和 [Proxy Group]；${generatedRuleSummary}；节点请在 Shadowrocket 中单独添加。`;
     } else if (outputType.value === "clash") {
       const subscriptions = lines.filter(isSubscriptionUrl);
       const nodeLinks = lines.filter(isDirectNodeLink);
@@ -100,12 +102,17 @@ document.querySelector("#download-config").addEventListener("click", () => {
 });
 
 toggleConversionMode();
+updateSummary();
 loadProjectRules();
 
 function updateSummary() {
   const count = nodeInput.value.split(/\r?\n/).filter((line) => line.trim()).length;
   const hasSubscription = inputLines().some(isSubscriptionUrl);
-  summary.textContent = count ? `已添加 ${count} 条订阅或节点链接` : "等待添加订阅或节点";
+  summary.textContent = count
+    ? `已添加 ${count} 条订阅或节点链接`
+    : outputType.value === "shadowrocket"
+      ? "可直接生成 Shadowrocket 规则配置"
+      : "等待添加订阅或节点";
   if ((outputType.value === "shadowrocket" || outputType.value === "clash") && !hasSubscription) {
     status.textContent = "节点名称、UUID 和密码不会离开此页面。";
   } else if (outputType.value === "clash") {
@@ -288,13 +295,14 @@ async function convertWithSubconverter(inputs, type) {
 
 function buildConfig(nodes) {
   return buildShadowrocketConfig(nodes, {
+    includeNodes: false,
     dns: clean(document.querySelector("#dns").value) || "system",
     finalPolicy: document.querySelector("#final-policy").value,
     ruleSets: ruleSetReferences(),
     customRules: [
-      ...customRules("reject", shadowrocketPolicyForAction("REJECT")),
-      ...customRules("proxy", shadowrocketPolicyForAction("PROXY")),
-      ...customRules("direct", shadowrocketPolicyForAction("DIRECT")),
+      ...customRules("reject", shadowrocketPolicyForAction("REJECT", { includeNodes: false })),
+      ...customRules("proxy", shadowrocketPolicyForAction("PROXY", { includeNodes: false })),
+      ...customRules("direct", shadowrocketPolicyForAction("DIRECT", { includeNodes: false })),
     ],
     geoip: document.querySelector("#rule-geoip").checked,
   });

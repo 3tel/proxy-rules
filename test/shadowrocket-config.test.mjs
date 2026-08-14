@@ -30,12 +30,13 @@ test("Shadowrocket config uses multi-policy groups", () => {
   assert.match(config, /FINAL,🐟 漏网之鱼/);
 });
 
-test("Shadowrocket config references fetched project rule files", () => {
+test("Shadowrocket rule-only config references project rule files without nodes", () => {
   const config = buildShadowrocketConfig(nodes, {
+    includeNodes: false,
     now: new Date(2026, 7, 14, 6, 32, 32),
     dns: "system",
     finalPolicy: "PROXY",
-    customRules: [],
+    customRules: ["DOMAIN-KEYWORD,github.com,PROXY"],
     ruleSets: [
       {
         id: "proxy",
@@ -47,11 +48,22 @@ test("Shadowrocket config references fetched project rule files", () => {
         action: "REJECT",
         url: "https://example.com/rules/reject.list",
       },
+      {
+        id: "direct",
+        action: "DIRECT",
+        url: "https://example.com/rules/direct.list",
+      },
     ],
-    geoip: false,
+    geoip: true,
   });
 
-  assert.match(config, /RULE-SET,https:\/\/example\.com\/rules\/proxy\.list,🚀 节点选择/);
-  assert.match(config, /RULE-SET,https:\/\/example\.com\/rules\/reject\.list,🛑 全球拦截/);
-  assert.doesNotMatch(config, /DOMAIN-SUFFIX,github\.com/);
+  assert.doesNotMatch(config, /^\[Proxy\]$/m);
+  assert.doesNotMatch(config, /^\[Proxy Group\]$/m);
+  assert.doesNotMatch(config, /^nyc_8443=/m);
+  assert.match(config, /DOMAIN-KEYWORD,github.com,PROXY/);
+  assert.match(config, /RULE-SET,https:\/\/example\.com\/rules\/proxy\.list,PROXY/);
+  assert.match(config, /RULE-SET,https:\/\/example\.com\/rules\/reject\.list,REJECT/);
+  assert.match(config, /RULE-SET,https:\/\/example\.com\/rules\/direct\.list,DIRECT/);
+  assert.match(config, /GEOIP,CN,DIRECT/);
+  assert.match(config, /FINAL,PROXY/);
 });

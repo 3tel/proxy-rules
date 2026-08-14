@@ -13,7 +13,7 @@ Shadowrocket 和 Clash/Mihomo 类客户端的配置。
 - 静态网页支持 VLESS、VMess、Trojan 和 Shadowsocks 分享链接
 - 可按需启用广告拦截、代理域名、国内直连和 GEOIP 分流
 - 在线生成器默认引用 GitHub Pages 上每日发布的抓取规则，不展开十几万条规则正文
-- Shadowrocket 生成 `.conf` 配置，内置节点选择、自动选择、故障转移、负载均衡、全球直连、全球拦截和漏网之鱼策略组，并提供逐节点标准分享二维码
+- Shadowrocket 生成不内嵌节点的轻量 `.conf` 规则配置，并提供逐节点标准分享二维码
 - Clash/Mihomo 生成 `.yaml`，节点、策略组、远程规则提供者和分流引用写在同一个文件里
 - 支持订阅链接；默认通过 `https://convert.3tel.net` 取得订阅节点
 - Clash/Mihomo 对 VLESS、VMess、Trojan 和 SS 直链优先在浏览器本地生成，避免旧版 subconverter 无法识别 VLESS 直链
@@ -26,10 +26,10 @@ Shadowrocket 和 Clash/Mihomo 类客户端的配置。
 
 https://3tel.github.io/proxy-rules/
 
-粘贴节点或订阅链接、选择分流规则和策略，然后点击“生成配置”。Shadowrocket 会生成
-`.conf` 配置和节点二维码；Clash/Mihomo 会生成包含 `proxies`、`proxy-groups` 和完整
-`rules` 的 `.yaml` 文件。直接节点的 UUID、密码和服务器信息不会离开当前浏览器；订阅链接
-需要通过你指定的 subconverter 服务解析。
+粘贴节点或订阅链接、选择分流规则和策略，然后点击“生成配置”。Shadowrocket 会生成不含节点
+的 `.conf` 规则配置；如果输入了节点或订阅，也会额外生成节点二维码。Clash/Mihomo 会生成
+包含 `proxies`、`proxy-groups`、`rule-providers` 和 `rules` 的 `.yaml` 文件。直接节点的
+UUID、密码和服务器信息不会离开当前浏览器；订阅链接需要通过你指定的 subconverter 服务解析。
 
 在线生成器默认会引用本项目发布到 GitHub Pages 的抓取规则：
 
@@ -37,7 +37,8 @@ https://3tel.github.io/proxy-rules/
 - `rules/proxy.list` → 代理域名列表
 - `rules/direct.list` → 国内域名直连
 
-生成 Shadowrocket 配置时，会使用 `RULE-SET,URL,策略组` 引用远程规则。生成 Clash/Mihomo
+生成 Shadowrocket 配置时，会使用 `RULE-SET,URL,PROXY/DIRECT/REJECT` 引用远程规则，不写入
+`[Proxy]` 节点或 `[Proxy Group]`。生成 Clash/Mihomo
 配置时，会使用 `rule-providers` 定义远程规则，再在 `rules` 中用 `RULE-SET,名称,策略`
 引用。临时自定义规则仍会直接写进本次生成的配置。
 
@@ -49,7 +50,7 @@ https://3tel.github.io/proxy-rules/
 
 本项目只聚焦两类客户端：
 
-- Shadowrocket：生成包含 `[General]`、`[Proxy]`、多策略 `[Proxy Group]` 和 `[Rule]` 的 `.conf`，并为每个节点生成标准分享二维码。
+- Shadowrocket：生成包含 `[General]` 和 `[Rule]` 的轻量 `.conf`，不内嵌节点，并为每个节点生成标准分享二维码。
 - Clash/Mihomo：生成包含节点、策略组、`rule-providers` 和 `rules` 的一体化 `.yaml`，抓取规则通过远程 provider 引用。
 
 订阅解析默认使用项目维护的 `https://convert.3tel.net` subconverter 服务，也可以替换成其他
@@ -57,10 +58,10 @@ https://3tel.github.io/proxy-rules/
 和密码等节点信息。
 
 输入框支持一行一个 HTTP/HTTPS 订阅链接，也可同时填写多个订阅地址进行合并。选择
-Shadowrocket 时，直接节点仍在浏览器本地解析；如果输入中包含订阅链接，则使用用户填写的
-subconverter 服务以 `mixed` 格式解析订阅，再与直接节点合并成带分流规则的配置。
-Shadowrocket 的 PROXY 规则会指向 `🚀 节点选择`，DIRECT 规则会指向 `🎯 全球直连`，REJECT
-规则会指向 `🛑 全球拦截`，最终未匹配流量默认进入 `🐟 漏网之鱼`。
+Shadowrocket 时，可以不填写任何节点，直接生成规则配置。直接节点仍在浏览器本地解析；如果
+输入中包含订阅链接，则使用用户填写的 subconverter 服务以 `mixed` 格式解析订阅，并只用于
+生成节点二维码。Shadowrocket 的 PROXY、DIRECT、REJECT 规则会分别指向客户端内置策略
+`PROXY`、`DIRECT`、`REJECT`，最终未匹配流量默认进入 `PROXY`。
 
 选择 Clash/Mihomo 时，VLESS、VMess、Trojan 或 SS 直链会直接写入 `proxies`；订阅链接会先
 通过 subconverter 取得节点，再在浏览器里合并本项目远程规则引用、自定义规则和最终策略。

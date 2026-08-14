@@ -16,23 +16,23 @@
         <div class="hero-copy">
           <p class="eyebrow">PRIVATE. LOCAL. READY.</p>
           <h1>把节点和规则，<br><span>变成一份配置。</span></h1>
-          <p class="lede">聚焦 Shadowrocket 和 Clash/Mihomo：粘贴订阅地址或节点链接，生成带节点和规则的客户端配置。</p>
+          <p class="lede">聚焦 Shadowrocket 和 Clash/Mihomo：Shadowrocket 生成轻量规则配置和节点二维码，Clash/Mihomo 生成带节点和规则引用的 YAML。</p>
         </div>
         <div class="privacy"><span></span>直接节点本地处理；订阅转换使用你指定的服务</div>
       </header>
 
       <form id="generator" novalidate>
         <section class="panel panel-wide">
-          <div class="step"><span>01</span><div><h2>添加订阅或节点</h2><p>每行一个订阅地址或分享链接；Shadowrocket 可生成节点二维码，Clash/Mihomo 可生成完整 YAML。</p></div></div>
+          <div class="step"><span>01</span><div><h2>添加订阅或节点</h2><p>Shadowrocket 可留空只生成规则配置；填写节点或订阅时额外生成节点二维码。Clash/Mihomo 需要至少一个订阅或节点。</p></div></div>
           <label class="sr-only" for="nodes">节点分享链接</label>
-          <textarea id="nodes" rows="9" spellcheck="false" autocomplete="off" placeholder="https://example.com/subscription&#10;vless://uuid@example.com:443?security=tls&type=ws#我的节点"></textarea>
+          <textarea id="nodes" rows="9" spellcheck="false" autocomplete="off" placeholder="Shadowrocket 可留空，只生成规则配置&#10;https://example.com/subscription&#10;vless://uuid@example.com:443?security=tls&type=ws#我的节点"></textarea>
           <div class="field-foot"><span>支持订阅 URL · vless:// · vmess:// · trojan:// · ss://</span><button class="text-button" type="button" id="clear">清空</button></div>
         </section>
 
         <section class="panel">
           <div class="step"><span>02</span><div><h2>配置选项</h2><p>默认引用本项目每日抓取并发布的远程规则。</p></div></div>
           <div class="fields">
-            <label>生成类型<select id="output-type"><option value="shadowrocket">Shadowrocket：配置 + 节点二维码</option><option value="clash">Clash/Mihomo：节点 + 规则 YAML</option></select></label>
+            <label>生成类型<select id="output-type"><option value="shadowrocket">Shadowrocket：规则配置 + 节点二维码</option><option value="clash">Clash/Mihomo：节点 + 规则 YAML</option></select></label>
             <label>配置名称<input id="filename" value="custom-proxy" maxlength="48"></label>
             <label>Clash 节点策略<select id="group-mode"><option value="select">手动选择</option><option value="url-test">自动测速</option><option value="fallback">故障切换</option></select></label>
             <label>最终策略<select id="final-policy"><option value="PROXY">未匹配走代理</option><option value="DIRECT">未匹配直连</option></select></label>
@@ -77,7 +77,7 @@
             <div><p class="eyebrow">LOCAL OUTPUT</p><h2>配置已生成</h2></div>
             <div class="output-actions"><button type="button" id="copy-config">复制配置</button><button type="button" id="download-config">下载文件</button></div>
           </div>
-          <p id="config-import-help" class="import-help">Shadowrocket 完整配置包含节点选择、自动选择、故障转移、负载均衡、全球直连、全球拦截和漏网之鱼策略组。右侧二维码只用于在 Shadowrocket 首页单独添加节点。</p>
+          <p id="config-import-help" class="import-help">Shadowrocket 配置只包含通用设置和分流规则引用，不内嵌节点。节点请通过右侧二维码、订阅或 Shadowrocket 自己的服务器列表单独添加。</p>
           <div class="output-grid">
             <div class="preview-box"><div class="box-title"><span>完整配置预览</span><span id="config-size"></span></div><pre id="config-preview" tabindex="0"></pre></div>
             <div class="qr-box" id="qr-box">
