@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-08-28T22:01:05Z",
+  "generated_at": "2026-08-29T20:25:47Z",
   "counts": {
-    "DIRECT": 110317,
+    "DIRECT": 110295,
     "PROXY": 4037,
-    "REJECT": 177833
+    "REJECT": 178119
   },
   "source_counts": {
-    "AdGuard DNS filter": 177845,
-    "dnsmasq-china-list": 110636,
+    "AdGuard DNS filter": 178131,
+    "dnsmasq-china-list": 110618,
     "gfwlist": 4043,
     "rules/local/direct.txt": 0,
     "rules/local/proxy.txt": 0,
     "rules/local/reject.txt": 0
   },
-  "conflict_count": 325,
+  "conflict_count": 329,
   "conflicts": [
     {
       "kind": "DOMAIN-SUFFIX",
