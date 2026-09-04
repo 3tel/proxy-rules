@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-09-03T20:28:13Z",
+  "generated_at": "2026-09-04T20:28:03Z",
   "counts": {
-    "DIRECT": 110087,
-    "PROXY": 4039,
-    "REJECT": 179022
+    "DIRECT": 110107,
+    "PROXY": 4042,
+    "REJECT": 179329
   },
   "source_counts": {
-    "AdGuard DNS filter": 179034,
-    "dnsmasq-china-list": 110409,
-    "gfwlist": 4045,
+    "AdGuard DNS filter": 179341,
+    "dnsmasq-china-list": 110430,
+    "gfwlist": 4048,
     "rules/local/direct.txt": 0,
     "rules/local/proxy.txt": 0,
     "rules/local/reject.txt": 0
   },
-  "conflict_count": 328,
+  "conflict_count": 329,
   "conflicts": [
     {
       "kind": "DOMAIN-SUFFIX",
@@ -290,6 +290,14 @@
     {
       "kind": "DOMAIN-SUFFIX",
       "value": "heyuedi.com",
+      "keptAction": "PROXY",
+      "keptSource": "gfwlist",
+      "discardedAction": "DIRECT",
+      "discardedSource": "dnsmasq-china-list"
+    },
+    {
+      "kind": "DOMAIN-SUFFIX",
+      "value": "linux.sb",
       "keptAction": "PROXY",
       "keptSource": "gfwlist",
       "discardedAction": "DIRECT",
@@ -802,14 +810,6 @@
     {
       "kind": "DOMAIN-SUFFIX",
       "value": "effirst.com",
-      "keptAction": "REJECT",
-      "keptSource": "AdGuard DNS filter",
-      "discardedAction": "DIRECT",
-      "discardedSource": "dnsmasq-china-list"
-    },
-    {
-      "kind": "DOMAIN-SUFFIX",
-      "value": "gridsumdissector.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
