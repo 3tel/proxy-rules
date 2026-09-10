@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-09T20:29:06Z",
+  "generated_at": "2026-09-10T20:27:15Z",
   "counts": {
     "DIRECT": 110125,
     "PROXY": 4051,
-    "REJECT": 176921
+    "REJECT": 177302
   },
   "source_counts": {
-    "AdGuard DNS filter": 176933,
+    "AdGuard DNS filter": 177314,
     "dnsmasq-china-list": 110448,
     "gfwlist": 4057,
     "rules/local/direct.txt": 0,
