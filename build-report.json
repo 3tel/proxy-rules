@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-09-23T20:30:07Z",
+  "generated_at": "2026-09-24T20:31:41Z",
   "counts": {
-    "DIRECT": 110137,
+    "DIRECT": 110377,
     "PROXY": 4038,
-    "REJECT": 181531
+    "REJECT": 181855
   },
   "source_counts": {
-    "AdGuard DNS filter": 181543,
-    "dnsmasq-china-list": 110448,
+    "AdGuard DNS filter": 181867,
+    "dnsmasq-china-list": 110688,
     "gfwlist": 4044,
     "rules/local/direct.txt": 0,
     "rules/local/proxy.txt": 0,
@@ -297,14 +297,6 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "linux.sb",
-      "keptAction": "PROXY",
-      "keptSource": "gfwlist",
-      "discardedAction": "DIRECT",
-      "discardedSource": "dnsmasq-china-list"
-    },
-    {
-      "kind": "DOMAIN-SUFFIX",
       "value": "lovart.ai",
       "keptAction": "PROXY",
       "keptSource": "gfwlist",
@@ -433,15 +425,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "admob.com",
-      "keptAction": "REJECT",
-      "keptSource": "AdGuard DNS filter",
-      "discardedAction": "PROXY",
-      "discardedSource": "gfwlist"
-    },
-    {
-      "kind": "DOMAIN-SUFFIX",
-      "value": "adsame.com",
+      "value": "fancyapi.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -449,7 +433,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "allyes.com",
+      "value": "fancydsp.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -457,7 +441,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "chshcms.net",
+      "value": "puata.info",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -465,7 +449,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "dazhantai.com",
+      "value": "xcultur.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -473,7 +457,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "fastapi.net",
+      "value": "beizi.biz",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -481,15 +465,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "incloak.com",
-      "keptAction": "REJECT",
-      "keptSource": "AdGuard DNS filter",
-      "discardedAction": "PROXY",
-      "discardedSource": "gfwlist"
-    },
-    {
-      "kind": "DOMAIN-SUFFIX",
-      "value": "linkhaitao.com",
+      "value": "aizhantj.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -497,7 +473,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "madserving.com",
+      "value": "wkzw.me",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -505,7 +481,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "rumt-sg.com",
+      "value": "kmqianneng66.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -513,7 +489,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "tapdb.net",
+      "value": "qxwoiv.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -521,15 +497,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "vid.me",
-      "keptAction": "REJECT",
-      "keptSource": "AdGuard DNS filter",
-      "discardedAction": "PROXY",
-      "discardedSource": "gfwlist"
-    },
-    {
-      "kind": "DOMAIN-SUFFIX",
-      "value": "wnp.com",
+      "value": "hlstlyy.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -537,7 +505,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "ymmobi.com",
+      "value": "ddgjjj.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -545,7 +513,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "yunshipei.com",
+      "value": "gainifyads.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -553,7 +521,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "zyiis.net",
+      "value": "luxads.net",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -561,7 +529,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "360ads.com",
+      "value": "ultrapay.net",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -569,7 +537,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "alimama.com",
+      "value": "vpath.net",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -577,19 +545,11 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "tradplusad.com",
+      "value": "sdqoi2d.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
       "discardedSource": "dnsmasq-china-list"
-    },
-    {
-      "kind": "DOMAIN-SUFFIX",
-      "value": "mmaaxx.com",
-      "keptAction": "REJECT",
-      "keptSource": "AdGuard DNS filter",
-      "discardedAction": "PROXY",
-      "discardedSource": "gfwlist"
     },
     {
       "kind": "DOMAIN-SUFFIX",
@@ -697,6 +657,14 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
+      "value": "tradplusad.com",
+      "keptAction": "REJECT",
+      "keptSource": "AdGuard DNS filter",
+      "discardedAction": "DIRECT",
+      "discardedSource": "dnsmasq-china-list"
+    },
+    {
+      "kind": "DOMAIN-SUFFIX",
       "value": "ts166.net",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
@@ -729,7 +697,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "openinstall.io",
+      "value": "click.lenovo.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -737,7 +705,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "bxtag.com",
+      "value": "id6.me",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -745,7 +713,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "umeng.com",
+      "value": "detailroi.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -753,7 +721,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "cdn-gw-dv.vip",
+      "value": "onegg.site",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -761,7 +729,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "gw-dv.vip",
+      "value": "cpatrk.net",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -769,7 +737,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "cartx.cloud",
+      "value": "dutils.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -777,7 +745,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "getui.net",
+      "value": "statistical-report.djiservice.org",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -785,7 +753,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "getui.com",
+      "value": "pangolin-sdk-toutiao.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -793,7 +761,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "tongjiniao.com",
+      "value": "pangolin-sdk-toutiao-b.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -801,7 +769,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "rumt-zh.com",
+      "value": "jpush.io",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -809,7 +777,39 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "effirst.com",
+      "value": "meitustat.com",
+      "keptAction": "REJECT",
+      "keptSource": "AdGuard DNS filter",
+      "discardedAction": "DIRECT",
+      "discardedSource": "dnsmasq-china-list"
+    },
+    {
+      "kind": "DOMAIN-SUFFIX",
+      "value": "volceapplog.com",
+      "keptAction": "REJECT",
+      "keptSource": "AdGuard DNS filter",
+      "discardedAction": "DIRECT",
+      "discardedSource": "dnsmasq-china-list"
+    },
+    {
+      "kind": "DOMAIN-SUFFIX",
+      "value": "iemiq.com",
+      "keptAction": "REJECT",
+      "keptSource": "AdGuard DNS filter",
+      "discardedAction": "DIRECT",
+      "discardedSource": "dnsmasq-china-list"
+    },
+    {
+      "kind": "DOMAIN-SUFFIX",
+      "value": "ws.ksmobile.net",
+      "keptAction": "REJECT",
+      "keptSource": "AdGuard DNS filter",
+      "discardedAction": "DIRECT",
+      "discardedSource": "dnsmasq-china-list"
+    },
+    {
+      "kind": "DOMAIN-SUFFIX",
+      "value": "rumt-sg.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
