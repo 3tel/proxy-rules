@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-24T20:31:41Z",
+  "generated_at": "2026-09-25T20:29:00Z",
   "counts": {
     "DIRECT": 110377,
     "PROXY": 4038,
-    "REJECT": 181855
+    "REJECT": 182179
   },
   "source_counts": {
-    "AdGuard DNS filter": 181867,
+    "AdGuard DNS filter": 182191,
     "dnsmasq-china-list": 110688,
     "gfwlist": 4044,
     "rules/local/direct.txt": 0,
@@ -553,7 +553,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "yodo1.com",
+      "value": "xdrig.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
@@ -561,7 +561,7 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
-      "value": "xdrig.com",
+      "value": "yodo1.com",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
