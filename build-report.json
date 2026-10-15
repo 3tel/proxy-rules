@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-10-14T20:29:59Z",
+  "generated_at": "2026-10-15T20:29:11Z",
   "counts": {
-    "DIRECT": 109604,
+    "DIRECT": 109552,
     "PROXY": 4081,
-    "REJECT": 183773
+    "REJECT": 184398
   },
   "source_counts": {
-    "AdGuard DNS filter": 183785,
-    "dnsmasq-china-list": 109887,
+    "AdGuard DNS filter": 184410,
+    "dnsmasq-china-list": 109833,
     "gfwlist": 4087,
     "rules/local/direct.txt": 0,
     "rules/local/proxy.txt": 0,
     "rules/local/reject.txt": 0
   },
-  "conflict_count": 289,
+  "conflict_count": 287,
   "conflicts": [
     {
       "kind": "DOMAIN-SUFFIX",
@@ -354,14 +354,6 @@
     {
       "kind": "DOMAIN-SUFFIX",
       "value": "powercx.com",
-      "keptAction": "PROXY",
-      "keptSource": "gfwlist",
-      "discardedAction": "DIRECT",
-      "discardedSource": "dnsmasq-china-list"
-    },
-    {
-      "kind": "DOMAIN-SUFFIX",
-      "value": "skyxvpn.com",
       "keptAction": "PROXY",
       "keptSource": "gfwlist",
       "discardedAction": "DIRECT",
@@ -810,6 +802,14 @@
     {
       "kind": "DOMAIN-SUFFIX",
       "value": "rumt-sg.com",
+      "keptAction": "REJECT",
+      "keptSource": "AdGuard DNS filter",
+      "discardedAction": "DIRECT",
+      "discardedSource": "dnsmasq-china-list"
+    },
+    {
+      "kind": "DOMAIN-SUFFIX",
+      "value": "openinstall.io",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
