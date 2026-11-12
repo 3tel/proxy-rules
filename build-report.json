@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-11-11T20:58:35Z",
+  "generated_at": "2026-11-12T20:24:24Z",
   "counts": {
-    "DIRECT": 109167,
+    "DIRECT": 109166,
     "PROXY": 4104,
-    "REJECT": 189695
+    "REJECT": 190097
   },
   "source_counts": {
-    "AdGuard DNS filter": 189707,
+    "AdGuard DNS filter": 190109,
     "dnsmasq-china-list": 109449,
     "gfwlist": 4110,
     "rules/local/direct.txt": 0,
     "rules/local/proxy.txt": 0,
     "rules/local/reject.txt": 0
   },
-  "conflict_count": 288,
+  "conflict_count": 289,
   "conflicts": [
     {
       "kind": "DOMAIN-SUFFIX",
@@ -697,6 +697,14 @@
     },
     {
       "kind": "DOMAIN-SUFFIX",
+      "value": "fxltsbl.com",
+      "keptAction": "REJECT",
+      "keptSource": "AdGuard DNS filter",
+      "discardedAction": "DIRECT",
+      "discardedSource": "dnsmasq-china-list"
+    },
+    {
+      "kind": "DOMAIN-SUFFIX",
       "value": "id6.me",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
@@ -802,14 +810,6 @@
     {
       "kind": "DOMAIN-SUFFIX",
       "value": "rumt-sg.com",
-      "keptAction": "REJECT",
-      "keptSource": "AdGuard DNS filter",
-      "discardedAction": "DIRECT",
-      "discardedSource": "dnsmasq-china-list"
-    },
-    {
-      "kind": "DOMAIN-SUFFIX",
-      "value": "openinstall.io",
       "keptAction": "REJECT",
       "keptSource": "AdGuard DNS filter",
       "discardedAction": "DIRECT",
